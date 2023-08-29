@@ -1,6 +1,5 @@
 use std::net::TcpListener;
 use demcru::startup::run;
-
 use demcru::configuration::get_config;
 use sqlx::PgPool;
 #[tokio::main]
