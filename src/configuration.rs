@@ -3,6 +3,7 @@ use std::fs::File;
 use mini_markdown::render;
 use serde::{Serialize, Deserialize};
 
+// Blog 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Post {
     pub slug: String,
@@ -34,6 +35,7 @@ impl Config {
     }
 }
 
+// Database
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
