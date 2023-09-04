@@ -7,6 +7,10 @@ use handlebars::Handlebars;
 use serde_json::json;
 use crate::configuration::Config;
 
+pub async fn health_check() -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
+
 #[get("/")]
 async fn index(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl Responder {
     let default = config.default.clone();
@@ -82,6 +86,7 @@ pub fn run(
                     .prefer_utf8(true)
                     .use_last_modified(true),
             )
+            .route("/health-check", web::get().to(health_check))
     })
     .listen(listener)?
     .run();

@@ -35,6 +35,26 @@ posts:
       the documentation again, but it's just so hard to understand. I've tried
       reading the book again, but it's just so dry. I've tried watching videos
       again, but they're all
+      ![tree](/images/logo.png)
+      
+      ```rust
+        use std::net::TcpListener;
+        use demcru::startup::run;
+        use demcru::configuration::get_config;
+        use sqlx::PgPool;
+
+        #[tokio::main]
+        async fn main() -> std::io::Result<()> {
+            let config = get_config().expect("Failed to read config");
+            let connection_pool = PgPool::connect(&config.database.connection_string())
+                .await
+                .expect("Failed to connect to postgres.");
+            let address = format!("127.0.0.1:{}", config.application_port);
+            let listener = TcpListener::bind(address)?;
+            run(listener, connection_pool)?.await?;
+            Ok(())
+        }
+      ```
   - slug: expected-404s
     title: "404's should not be expected behavior"
     author: Dru Jensen
