@@ -1,7 +1,7 @@
-use std::net::TcpListener;
+use std::{net::TcpListener, collections::HashMap};
 
-use actix_files::Files;
-use actix_web::{App, HttpServer, dev::Server, web::{self, Data}, get, Responder, HttpResponse};
+// use actix_files::Files;
+use actix_web::{App, HttpServer, dev::Server, web::{self, Data}, Responder, HttpResponse};
 use sqlx::PgPool;
 use handlebars::Handlebars;
 use serde_json::json;
@@ -11,7 +11,11 @@ pub async fn health_check() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
-pub async fn index(
+pub async fn index(hb: Data<Handlebars<'static>>) -> impl Responder {
+    let html = hb.render("index", &json!({"name": "foo"})).unwrap();
+    HttpResponse::Ok().body(html)
+}
+pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,
     pool: web::Data<PgPool>) 
 -> impl Responder {
@@ -20,10 +24,13 @@ pub async fn index(
         .await;
     match body {
         Ok(contacts) => {
-            let data = json!({
-                "contacts": contacts
-            });
-            let html = hb.render("contact", &data).unwrap();
+            // let data = json!({
+            //     "contacts": contacts
+            // });
+            // println!("{:?}", data);
+            let mut context = HashMap::new();
+            context.insert("contacts".to_string(), &contacts);
+            let html = hb.render("contact", &context).unwrap();
             HttpResponse::Ok().body(html)
         }
         Err(e) => {
@@ -34,13 +41,11 @@ pub async fn index(
 
 }
 
-// #[get("/")]
-// async fn index(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl Responder {
-//     let default = config.default.clone();
-//     current(hb, config, default)
-// }
-//
-#[get("/{current}")]
+async fn blog(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl Responder {
+    let default = config.default.clone();
+    current(hb, config, default)
+}
+
 async fn detail(
     hb: web::Data<Handlebars<'_>>, 
     config: web::Data<Config>,
@@ -60,11 +65,10 @@ fn current(
         "posts": config.posts,
         "current": current
     });
-    let body = hb.render("index", &data).unwrap();
+    let body = hb.render("blog", &data).unwrap();
     HttpResponse::Ok().body(body)
 }
 
-#[get("/content/{slug}")]
 async fn content(
     config: web::Data<Config>,
     hb: web::Data<Handlebars<'_>>,
@@ -89,7 +93,7 @@ pub fn run(
     db_pool: PgPool,
 ) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
-    // let config = Config::new();
+    let config = Config::new();
     let mut handlebars = Handlebars::new();
     handlebars
         .register_templates_directory(".hbs", "./templates")
@@ -99,8 +103,14 @@ pub fn run(
     let server = HttpServer::new(move || {
         App::new()
             .app_data(conn.clone())
-            // .app_data(web::Data::new(config.clone()))
+            .app_data(web::Data::new(config.clone()))
             .app_data(web::Data::new(handlebars.clone()))
+            .route("/", web::get().to(index))
+            .route("/health-check", web::get().to(health_check))
+            .route("/contacts", web::get().to(contacts))
+            .route("/detail/{current}", web::get().to(detail))
+            .route("/blog", web::get().to(blog))
+            .route("/content/{slug}", web::get().to(content))
             // .service(detail)
             // .service(content)
             // .service(
@@ -108,8 +118,6 @@ pub fn run(
             //         .prefer_utf8(true)
             //         .use_last_modified(true),
             // )
-            .route("/health-check", web::get().to(health_check))
-            .route("/", web::get().to(index))
     })
     .listen(listener)?
     .run();
