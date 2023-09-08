@@ -19,5 +19,5 @@ serde_yaml = "0.9"
 serde_json = "1.0"
 handlebars = { version = "4.2.1", features = ["dir_source"] }
 proc-macro2 = "1.0.66"
-chrono = "0.4.28"
-
+chrono = { version = "0.4.28", features = ["serde"] }
+uuid = { version = "1.4.1", features = ["serde", "v4"]}

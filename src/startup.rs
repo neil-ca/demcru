@@ -1,6 +1,6 @@
 use std::{net::TcpListener, collections::HashMap};
 
-// use actix_files::Files;
+use actix_files::Files;
 use actix_web::{App, HttpServer, dev::Server, web::{self, Data}, Responder, HttpResponse};
 use sqlx::PgPool;
 use handlebars::Handlebars;
@@ -19,7 +19,7 @@ pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,
     pool: web::Data<PgPool>) 
 -> impl Responder {
-    let body = sqlx::query_as!(Contacts, "SELECT email FROM contacts")
+    let body = sqlx::query_as!(Contacts, "SELECT * FROM contacts")
         .fetch_all(pool.get_ref())
         .await;
     match body {
@@ -83,6 +83,7 @@ async fn content(
         "date": post.date,
         "body": post.render(),
     });
+
     let body = hb.render("content", &data).unwrap();
 
     HttpResponse::Ok().body(body)
@@ -108,16 +109,16 @@ pub fn run(
             .route("/", web::get().to(index))
             .route("/health-check", web::get().to(health_check))
             .route("/contacts", web::get().to(contacts))
-            .route("/detail/{current}", web::get().to(detail))
+            .route("/blog/{current}", web::get().to(detail))
             .route("/blog", web::get().to(blog))
-            .route("/content/{slug}", web::get().to(content))
+            .route("/blog/content/{slug}", web::get().to(content))
             // .service(detail)
             // .service(content)
-            // .service(
-            //     Files::new("/", "./static")
-            //         .prefer_utf8(true)
-            //         .use_last_modified(true),
-            // )
+            .service(
+                Files::new("/", "./static")
+                    .prefer_utf8(true)
+                    .use_last_modified(true),
+            )
     })
     .listen(listener)?
     .run();
