@@ -47,7 +47,7 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
         .expect("Failed to connect to postgres");
     let client = reqwest::Client::new();
     let response = client
-        .get(&format!("{}/contacts", &addr))
+        .get(&format!("{}/contacts", &app.address))
         .send()
         .await
         .expect("failed request");

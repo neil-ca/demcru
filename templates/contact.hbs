@@ -8,6 +8,7 @@
     <th scope="col" class="px-6 py-3">Email</td>
     <th scope="col" class="px-6 py-3">Phone</td>
     <th scope="col" class="px-6 py-3">Created at</td>
+    <th></th>
 </tr>
 </thead>
     <tbody>
@@ -18,7 +19,39 @@
     <td class="px-6 py-4">{{this.email}}</td>
     <td class="px-6 py-4">{{this.phone}}</td>
     <td class="px-6 py-4">{{this.created_at}}</td>
+    <td>
+        <button class="px-6 py-4"
+            hx-get="/contact/{{this.id}}/edit"
+            hx-trigger="edit"
+            _="on click
+                if .editing is not empty
+                 Swal.fire({title: 'Aready Editing',
+                    showCancelButton: true,
+                    confirmButtonText: 'yep, edit this row!',
+                    text:'Hey!  You are already editing a row!  Do you 
+                    want to cancel that edit and continue?'})   
+                    if the result's isConfirmed is false
+                         halt
+                       end
+                       send cancel to .editing
+                     end
+                     trigger edit">
+            Edit
+        </button>
+    </td> 
 </tr>
+<tr hx-trigger='cancel' class='editing' hx-get="/contact/${contact.id}">
+    <td><input name='name' value='{{this.name}}'></td>
+    <td><input name='email' value='{{this.email}}'></td>
+    <td>
+      <button class="btn btn-danger" hx-get="/contact/{{this.id}}">
+        Cancel
+      </button>
+      <button class="btn btn-danger" hx-put="/contact/{{this.id}}" hx-include="closest tr">
+        Save
+      </button>
+    </td>
+  </tr>
     {{/each}}
 </tbody>
 </table>

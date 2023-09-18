@@ -12,7 +12,7 @@ pub async fn health_check() -> HttpResponse {
 }
 
 pub async fn index(hb: Data<Handlebars<'static>>) -> impl Responder {
-    let html = hb.render("index", &json!({"name": "foo"})).unwrap();
+    let html = hb.render("index", &json!({"name": "contacts"})).unwrap();
     HttpResponse::Ok().body(html)
 }
 pub async fn contacts(
