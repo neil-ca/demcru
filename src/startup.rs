@@ -38,7 +38,6 @@ pub async fn contacts(
             HttpResponse::InternalServerError().body(format!("Error: {}", e))
         }
     }
-
 }
 
 async fn blog(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl Responder {
