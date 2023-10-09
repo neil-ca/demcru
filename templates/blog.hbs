@@ -1,11 +1,17 @@
 {{> head}}
-<div class="header">
-    <img src="/images/logo.png"/>
+<div class="p-5 w-fit m-auto border-indigo-200 shadow-md shadow-lime-200">
+    <h1>Articles and guides</h1>
     <ul>
     {{#each posts}}
-      <li><a href="/blog/{{this.slug}}" hx-get="/blog/content/{{this.slug}}" hx-target="#content" hx-replace-url="/blog/{{slug}}">{{this.title}}</a> ({{this.date}})</li>
+      <li class="text-orange-400 italic"><a href="/blog/{{this.slug}}" 
+        hx-get="/blog/content/{{this.slug}}" 
+        hx-target="#content" 
+        hx-replace-url="/blog/{{slug}}">
+        .{{this.title}} ({{this.date}})</a>
+      </li>
     {{/each}}
     </ul>
-  </div>
+</div>
 
 <div id="content" hx-get="/blog/content/{{current}}" hx-trigger="load delay:100ms" hx-target="#content"></div>
+

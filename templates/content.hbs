@@ -1,9 +1,10 @@
-<div id="{{slug}}">
-  <h1>{{title}}</h1>
+<div id="{{slug}}" class="p-8 my-4 font-mono [&>p]:py-3 [&>h2]:py-2 [&>h2]:font-extrabold">
+  <h1 class="text-orange-400 text-2xl font-extrabold">{{title}}</h1>
   <p>
     {{{body}}}
   </p>
-  <h6>posted on {{date}} by {{author}}</h6>
+  <h6 class="text-center text-orange-400 text-xl">posted on {{date}} by {{author}}</h6>
 </div>
 
-<script>hljs.highlightAll();</script>
+<!--<script>hljs.highlightAll();</script>-->
+<script>hljs.initHighlightingOnLoad();</script>
