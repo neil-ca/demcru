@@ -5,6 +5,7 @@ use actix_web::{App, HttpServer, dev::Server, web::{self, Data}, Responder, Http
 use sqlx::PgPool;
 use handlebars::Handlebars;
 use serde_json::json;
+// use actix_session::{Session, SessionMiddleware};
 use crate::{configuration::Config, contacts::Contacts};
 
 pub async fn health_check() -> HttpResponse {
@@ -14,6 +15,9 @@ pub async fn health_check() -> HttpResponse {
 pub async fn index(hb: Data<Handlebars<'static>>) -> impl Responder {
     let html = hb.render("index", &json!({})).unwrap();
     HttpResponse::Ok().body(html)
+}
+pub async fn like() -> impl Responder {
+    HttpResponse::Ok().body("as")
 }
 pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,

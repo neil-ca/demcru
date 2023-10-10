@@ -14,24 +14,27 @@
   </head>
   <body class="bg-black text-sky-100">
     <nav
-      class="w-full mx-auto flex flex-wrap flex-col p-3 md:flex-row items-center font-extrabold italic 
-      border-indigo-200 shadow-lg shadow-rose-200 mb-6"
+      class="w-full mx-auto flex flex-wrap flex-col p-3 md:flex-row items-center font-extrabold italic
+      mb-4 sticky backdrop-blur top-0"
     >
       <a href="/" class="flex flex-col items-center mb-4 md:mb-0 md:flex-row">
         <img src="/images/logo.png" class="rounded-full h-20 w-20" />
         <h1
-          class="text-rose-200 hover:text-rose-400 text-2xl ml-1 shadow-2xl"
+          class="text-rose-200 hover:text-rose-400 text-3xl ml-1 shadow-2xl animate-pulse"
         >ulicode</h1>
       </a>
       <div
         class="md:ml-auto flex flex-wrap items-center text-base justify-center"
       >
+        <button type="submit" class="bg-lime-500 mr-5 rounded-full w-7 h-7 animate-bounce">
+        <img src="/images/heart.svg" />
+        </button>
         <a
           href="/contacts"
-          class="mr-5 text-lime-200 hover:text-rlime-400 hover:underline"
+          class="mr-5 text-lime-200 hover:text-lime-400 hover:underline"
         >Contacts</a>
         <a href="/blog" class="mr-5 text-lime-200 hover:text-lime-400 hover:underline">Blog</a>
-        <a href="/blog" class="mr-5 text-lime-200 hover:text-lime-400 hover:underline">About me</a>
+        <a href="/blog" class="mr-5 text-lime-200 hover:text-lime-400 hover:underline animate-pulse">Resume</a>
       </div>
     </nav>
   </body>
