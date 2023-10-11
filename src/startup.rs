@@ -1,10 +1,17 @@
-use std::{net::TcpListener, collections::HashMap};
+use std::{collections::HashMap, net::TcpListener};
 
 use actix_files::Files;
-use actix_web::{App, HttpServer, dev::Server, web::{self, Data}, Responder, HttpResponse};
-use sqlx::PgPool;
+use actix_session::{storage::CookieSessionStore, Session, SessionGetError, SessionMiddleware};
+use actix_web::{
+    cookie::Key,
+    dev::Server,
+    web::{self, Data},
+    App, HttpResponse, HttpServer, Responder,
+};
 use handlebars::Handlebars;
 use serde_json::json;
+use sqlx::PgPool;
+use uuid::Uuid;
 // use actix_session::{Session, SessionMiddleware};
 use crate::{configuration::Config, contacts::Contacts};
 
@@ -16,13 +23,12 @@ pub async fn index(hb: Data<Handlebars<'static>>) -> impl Responder {
     let html = hb.render("index", &json!({})).unwrap();
     HttpResponse::Ok().body(html)
 }
-pub async fn like() -> impl Responder {
-    HttpResponse::Ok().body("as")
-}
+
+
 pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,
-    pool: web::Data<PgPool>) 
--> impl Responder {
+    pool: web::Data<PgPool>,
+) -> impl Responder {
     let body = sqlx::query_as!(Contacts, "SELECT * FROM contacts")
         .fetch_all(pool.get_ref())
         .await;
@@ -50,7 +56,7 @@ async fn blog(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl 
 }
 
 async fn detail(
-    hb: web::Data<Handlebars<'_>>, 
+    hb: web::Data<Handlebars<'_>>,
     config: web::Data<Config>,
     path: web::Path<String>,
 ) -> impl Responder {
@@ -92,20 +98,22 @@ async fn content(
     HttpResponse::Ok().body(body)
 }
 
-pub fn run(
-    listener: TcpListener,
-    db_pool: PgPool,
-) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
     let config = Config::new();
     let mut handlebars = Handlebars::new();
     handlebars
         .register_templates_directory(".hbs", "./templates")
         .unwrap();
-
+    let secret_key = Key::generate();
     let conn = Data::new(db_pool);
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(
+                SessionMiddleware::builder(CookieSessionStore::default(), secret_key.clone())
+                    .cookie_secure(false)
+                    .build(),
+            )
             .app_data(conn.clone())
             .app_data(web::Data::new(config.clone()))
             .app_data(web::Data::new(handlebars.clone()))
@@ -127,4 +135,3 @@ pub fn run(
     .run();
     Ok(server)
 }
-
