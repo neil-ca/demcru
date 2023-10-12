@@ -15,10 +15,13 @@
     <a href="https://github.com/neil-ca" target="_blank"><img src="/images/git.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     <a href="malito:ulicode4@gmail.com"><img src="/images/mail.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     <a href="https://www.linkedin.com/in/neil-campos" target="_blank"><img src="/images/linkedin.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
-    <div
-        hx-post="/like" hx-swap="outerHTML">
-        <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"/>
-    </div>
+    {{#if cookie}}
+        <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 animate-pulse"
+            hx-post="/like" hx-swap="outerHTML"/>
+    {{else}}
+        <img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 animate-pulse"
+            hx-post="/like" hx-swap="outerHTML"/>
+    {{/if}}
   </div>
 </div>
     <section>

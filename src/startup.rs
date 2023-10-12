@@ -1,29 +1,105 @@
 use std::{collections::HashMap, net::TcpListener};
 
+use crate::{configuration::Config, contacts::Contacts};
 use actix_files::Files;
-use actix_session::{storage::CookieSessionStore, Session, SessionGetError, SessionMiddleware};
+use actix_session::{storage::CookieSessionStore, SessionMiddleware};
+use actix_web::Error;
 use actix_web::{
-    cookie::Key,
+    cookie::{time::Duration, Cookie, Key},
     dev::Server,
     web::{self, Data},
-    App, HttpResponse, HttpServer, Responder,
+    App, HttpRequest, HttpResponse, HttpServer, Responder,
 };
 use handlebars::Handlebars;
 use serde_json::json;
-use sqlx::PgPool;
+use sqlx::{query, PgPool};
 use uuid::Uuid;
-// use actix_session::{Session, SessionMiddleware};
-use crate::{configuration::Config, contacts::Contacts};
-
 pub async fn health_check() -> HttpResponse {
     HttpResponse::Ok().finish()
 }
 
-pub async fn index(hb: Data<Handlebars<'static>>) -> impl Responder {
-    let html = hb.render("index", &json!({})).unwrap();
-    HttpResponse::Ok().body(html)
+pub async fn index(hb: Data<Handlebars<'static>>, req: HttpRequest) -> HttpResponse {
+    let user_uuid = match req.cookie("user_uuid") {
+        Some(_) => true,
+        None => false,
+    };
+    let content = if user_uuid {
+        hb.render("index", &json!({"cookie": true})).unwrap()
+    } else {
+        hb.render("index", &json!({"cookie": false})).unwrap()
+    };
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(content)
 }
 
+pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpResponse, Error> {
+    let user_uuid = match req.cookie("user_uuid") {
+        Some(c) => {
+            // Delete like from db
+            let uuid_str = c.value();
+            let id = match Uuid::parse_str(uuid_str) {
+                Ok(parsed) => parsed,
+                Err(_) => {
+                    return Ok(HttpResponse::InternalServerError().body("Failed to parse Uuid"))
+                }
+            };
+            let _ = query!("DELETE FROM likes WHERE id = $1", id)
+                .execute(pool.get_ref())
+                .await;
+
+            // Delete cookie
+            let expiration_cookie = Cookie::build("user_uuid", "")
+                .max_age(Duration::ZERO)
+                .path("/")
+                .finish();
+            HttpResponse::Ok()
+                .cookie(expiration_cookie)
+                .content_type("text/html; charset=utf-8")
+                .body(
+                    r#"<img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 
+                        hover:h-7 m-2 animate-pulse"
+                        hx-post="/like" hx-swap="outerHTML"/>
+                        "#,
+                )
+        }
+        None => {
+            let count = query!("SELECT COUNT(id) FROM likes")
+                .fetch_one(pool.get_ref())
+                .await;
+            match count {
+                Ok(likes) => {
+                    let current: i64 = likes.count.unwrap_or(0);
+                    let new = current + 1;
+                    let new_uuid = Uuid::new_v4();
+                    let _ = query!(
+                        "INSERT INTO likes (id, counter) VALUES ($1, $2)",
+                        new_uuid,
+                        new
+                    )
+                    .execute(pool.get_ref())
+                    .await;
+                }
+            }
+
+            HttpResponse::Ok()
+                .cookie(
+                    Cookie::build("user_uuid", new_uuid.to_string())
+                        .http_only(true)
+                        .path("/")
+                        .finish(),
+                )
+                .content_type("text/html; charset=utf-8")
+                .body(
+                    r#"<img src="/images/heart.svg" class="w-6 h-6 hover:w-7 
+                    hover:h-7 m-2 animate-pulse"
+            hx-post="/like" hx-swap="outerHTML"/>
+            "#,
+                )
+        }
+    };
+    Ok(user_uuid)
+}
 
 pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,
@@ -119,6 +195,7 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
             .app_data(web::Data::new(handlebars.clone()))
             .route("/", web::get().to(index))
             .route("/health-check", web::get().to(health_check))
+            .route("/like", web::post().to(like))
             .route("/contacts", web::get().to(contacts))
             .route("/blog/{current}", web::get().to(detail))
             .route("/blog", web::get().to(blog))
