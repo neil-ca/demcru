@@ -7,7 +7,6 @@ edition = "2021"
 [dependencies]
 actix-files = "0.6.2"
 actix-web = "4.3.1"
-anyhow = "1.0.72"
 config = "0.13.3"
 dotenv = "0.15.0"
 reqwest = "0.11.18"
@@ -22,3 +21,4 @@ proc-macro2 = "1.0.66"
 chrono = { version = "0.4.28", features = ["serde"] }
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
+anyhow = "1.0.75"
