@@ -79,23 +79,23 @@ pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpRespo
                     )
                     .execute(pool.get_ref())
                     .await;
-                }
-            }
-
-            HttpResponse::Ok()
-                .cookie(
-                    Cookie::build("user_uuid", new_uuid.to_string())
-                        .http_only(true)
-                        .path("/")
-                        .finish(),
-                )
-                .content_type("text/html; charset=utf-8")
-                .body(
-                    r#"<img src="/images/heart.svg" class="w-6 h-6 hover:w-7 
+                    HttpResponse::Ok()
+                        .cookie(
+                            Cookie::build("user_uuid", new_uuid.to_string())
+                                .http_only(true)
+                                .path("/")
+                                .finish(),
+                        )
+                        .content_type("text/html; charset=utf-8")
+                        .body(
+                            r#"<img src="/images/heart.svg" class="w-6 h-6 hover:w-7 
                     hover:h-7 m-2 animate-pulse"
             hx-post="/like" hx-swap="outerHTML"/>
             "#,
-                )
+                        )
+                }
+                Err(_) => return Ok(HttpResponse::InternalServerError().body("Failed to parse Uuid"))
+            }
         }
     };
     Ok(user_uuid)
