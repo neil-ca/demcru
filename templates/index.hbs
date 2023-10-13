@@ -1,6 +1,6 @@
 {{> head}}
 <main class="h-fit text-center p-8">
-<div class="w-[70%] mx-auto shadow-xl shadow-red-300 border-red-50 rounded-md mb-12">
+<div class="w-[90%] md:w-[60%] mx-auto shadow-xl shadow-red-400 border-red-50 rounded-md mb-12">
   <img src="/images/me.jpg" class="rounded-full w-20 h-20 m-auto mb-3">
   <h2 class="font-bold text-orange-200 text-2xl py-2 md:text-xl">
     Neil Campos - Web Developer
@@ -11,18 +11,26 @@
     me down and let's get cracking!
   </p>
 
-  <div class="flex flex-row justify-center items-center bg-red-300 rounded-md mt-3">
+  <div class="flex flex-row justify-center items-center bg-red-400 rounded-md mt-3">
     <a href="https://github.com/neil-ca" target="_blank"><img src="/images/git.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
-    <a href="malito:ulicode4@gmail.com"><img src="/images/mail.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
+    <img _="on click js navigator.clipboard.writeText('ulicode4@gmail.com')
+    end then put 'Copied!' into #message wait 2s put '' into #message" 
+        src="/images/mail.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"/>
     <a href="https://www.linkedin.com/in/neil-campos" target="_blank"><img src="/images/linkedin.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     {{#if cookie}}
-        <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 animate-pulse"
-            hx-post="/like" hx-swap="outerHTML"/>
+        <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"
+            hx-post="/like" hx-swap="outerHTML"
+            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+        />
     {{else}}
-        <img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 animate-pulse"
-            hx-post="/like" hx-swap="outerHTML"/>
+        <img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"
+            hx-post="/like" hx-swap="outerHTML"
+            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+        />
     {{/if}}
   </div>
+    <span id="message"></span>
+    <span id="message2"></span>
 </div>
     <section>
         <div>

@@ -54,8 +54,10 @@ pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpRespo
                 .content_type("text/html; charset=utf-8")
                 .body(
                     r#"<img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 
-                        hover:h-7 m-2 animate-pulse"
-                        hx-post="/like" hx-swap="outerHTML"/>
+                    hover:h-7 m-2 cursor-pointer"
+                    hx-post="/like" hx-swap="outerHTML"
+                    _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+                        />
                         "#,
                 )
         }
@@ -87,8 +89,10 @@ pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpRespo
                 .content_type("text/html; charset=utf-8")
                 .body(
                     r#"<img src="/images/heart.svg" class="w-6 h-6 hover:w-7 
-                    hover:h-7 m-2 animate-pulse"
-            hx-post="/like" hx-swap="outerHTML"/>
+                    hover:h-7 m-2 cursor-pointer"
+            hx-post="/like" hx-swap="outerHTML"
+            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+           />
             "#,
                 )
         }
