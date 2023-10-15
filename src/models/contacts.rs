@@ -2,6 +2,7 @@ use sqlx::types::Uuid;
 use sqlx::types::chrono::Utc;
 use chrono::DateTime;
 use serde::{Deserialize, Serialize};
+
 #[derive(Debug, sqlx::FromRow, Deserialize, Serialize)]
 pub struct Contacts {
     pub id: Uuid,

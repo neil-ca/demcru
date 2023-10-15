@@ -3,7 +3,7 @@
 <div class="w-[90%] md:w-[60%] mx-auto shadow-xl shadow-red-400 border-red-50 rounded-md mb-12">
   <img src="/images/me.jpg" class="rounded-full w-20 h-20 m-auto mb-3">
   <h2 class="font-bold text-orange-200 text-2xl py-2 md:text-xl">
-    Neil Campos - Web Developer
+    Neil Campos
   </h2>
   <h3 class="text-2xl">Fullstack</h3>
   <p class="text-md py-6 m-2 leading-9">
@@ -20,12 +20,12 @@
     {{#if cookie}}
         <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"
             hx-post="/like" hx-swap="outerHTML"
-            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 1s put '' into #message2"
         />
     {{else}}
         <img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"
             hx-post="/like" hx-swap="outerHTML"
-            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
+            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 1s put '' into #message2"
         />
     {{/if}}
   </div>

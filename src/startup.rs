@@ -1,104 +1,16 @@
 use std::{collections::HashMap, net::TcpListener};
 
-use crate::{configuration::Config, contacts::Contacts, utils::CustomError};
+use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like}, models::contacts::Contacts};
 use actix_files::Files;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
-    cookie::{time::Duration, Cookie, Key},
     dev::Server,
     web::{self, Data},
-    App, HttpRequest, HttpResponse, HttpServer, Responder,
+    App, HttpResponse, HttpServer, Responder, cookie::Key,
 };
 use anyhow::Result;
 use handlebars::Handlebars;
-use serde_json::json;
-use sqlx::{query, PgPool};
-use uuid::Uuid;
-pub async fn health_check() -> HttpResponse {
-    HttpResponse::Ok().finish()
-}
-
-pub async fn index(hb: Data<Handlebars<'static>>, req: HttpRequest) -> HttpResponse {
-    let user_uuid = match req.cookie("user_uuid") {
-        Some(_) => true,
-        None => false,
-    };
-    let content = if user_uuid {
-        hb.render("index", &json!({"cookie": true})).unwrap()
-    } else {
-        hb.render("index", &json!({"cookie": false})).unwrap()
-    };
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(content)
-}
-
-pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpResponse, CustomError> {
-    let user_uuid = match req.cookie("user_uuid") {
-        Some(c) => {
-            // Delete like from db
-            let uuid_str = c.value();
-            let id = Uuid::parse_str(uuid_str).map_err(|_| CustomError::ParsingError)?;
-            query!("DELETE FROM likes WHERE id = $1", id)
-                .execute(pool.get_ref())
-                .await
-                .map_err(|e| CustomError::DatabaseError(e))?;
-
-            // Delete cookie
-            let expiration_cookie = Cookie::build("user_uuid", "")
-                .max_age(Duration::ZERO)
-                .path("/")
-                .finish();
-            HttpResponse::Ok()
-                .cookie(expiration_cookie)
-                .content_type("text/html; charset=utf-8")
-                .body(
-                    r#"<img src="/images/dislike.svg" class="w-6 h-6 hover:w-7 
-                    hover:h-7 m-2 cursor-pointer"
-                    hx-post="/like" hx-swap="outerHTML"
-                    _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
-                        />
-                        "#,
-                )
-        }
-        None => {
-            let count = query!("SELECT COUNT(id) FROM likes")
-                .fetch_one(pool.get_ref())
-                .await
-                .map_err(|e| CustomError::DatabaseError(e))?;
-
-            let current: i64 = count.count.unwrap_or(0);
-            let new = current + 1;
-            let new_uuid = Uuid::new_v4();
-            let _ = query!(
-                "INSERT INTO likes (id, counter) VALUES ($1, $2)",
-                new_uuid,
-                new
-            )
-            .execute(pool.get_ref())
-            .await
-            .map_err(|e| CustomError::DatabaseError(e))?;
-
-            HttpResponse::Ok()
-                .cookie(
-                    Cookie::build("user_uuid", new_uuid.to_string())
-                        .http_only(true)
-                        .path("/")
-                        .finish(),
-                )
-                .content_type("text/html; charset=utf-8")
-                .body(
-                    r#"<img src="/images/heart.svg" class="w-6 h-6 hover:w-7 
-                    hover:h-7 m-2 cursor-pointer"
-            hx-post="/like" hx-swap="outerHTML"
-            _="on htmx:afterOnLoad put 'Thank you!' into #message2 wait 2s put '' into #message2"
-           />
-            "#,
-                )
-        }
-    };
-    Ok(user_uuid)
-}
+use sqlx::PgPool;
 
 pub async fn contacts(
     hb: web::Data<Handlebars<'static>>,
@@ -125,53 +37,6 @@ pub async fn contacts(
     }
 }
 
-async fn blog(hb: web::Data<Handlebars<'_>>, config: web::Data<Config>) -> impl Responder {
-    let default = config.default.clone();
-    current(hb, config, default)
-}
-
-async fn detail(
-    hb: web::Data<Handlebars<'_>>,
-    config: web::Data<Config>,
-    path: web::Path<String>,
-) -> impl Responder {
-    current(hb, config, path.into_inner())
-}
-
-fn current(
-    hb: web::Data<Handlebars>,
-    config: web::Data<Config>,
-    current: String,
-) -> impl Responder {
-    let data = json!({
-        "title": config.title,
-        "description": config.description,
-        "posts": config.posts,
-        "current": current
-    });
-    let body = hb.render("blog", &data).unwrap();
-    HttpResponse::Ok().body(body)
-}
-
-async fn content(
-    config: web::Data<Config>,
-    hb: web::Data<Handlebars<'_>>,
-    path: web::Path<String>,
-) -> impl Responder {
-    let slug = path.into_inner();
-    let post = config.posts.iter().find(|post| post.slug == slug).unwrap();
-    let data = json!({
-        "slug": slug,
-        "title": post.title,
-        "author": post.author,
-        "date": post.date,
-        "body": post.render(),
-    });
-
-    let body = hb.render("content", &data).unwrap();
-
-    HttpResponse::Ok().body(body)
-}
 
 pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
