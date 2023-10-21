@@ -733,6 +733,7 @@ dependencies = [
  "handlebars",
  "mini_markdown",
  "proc-macro2",
+ "rand",
  "reqwest",
  "serde",
  "serde_json",
