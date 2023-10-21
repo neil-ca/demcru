@@ -6,7 +6,7 @@ use crate::helpers::spawn_app;
 
 #[tokio::test]
 async fn health_check_works() {
-    let app = spawn_app();
+    let app = spawn_app().await;
 
     let client = reqwest::Client::new();
     let response = client
@@ -19,7 +19,7 @@ async fn health_check_works() {
 }
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
-    let app = spawn_app();
+    let app = spawn_app().await;
     let config = get_config().expect("Fail read config");
     let conn_str = config.database.connection_string();
     let mut conn = PgConnection::connect(&conn_str)

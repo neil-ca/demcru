@@ -28,3 +28,5 @@ chrono = { version = "0.4.28", features = ["serde"] }
 uuid = { version = "1.4.1", features = ["serde", "v4"] }
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
 anyhow = "1.0.75"
+actix-web-actors = "4.2.0"
+actix = "0.13.1"

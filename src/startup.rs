@@ -1,6 +1,6 @@
 use std::{collections::HashMap, net::TcpListener};
 
-use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like}, models::contacts::Contacts};
+use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like, chat}, models::contacts::Contacts};
 use actix_files::Files;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
@@ -64,6 +64,7 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
             .route("/blog/{current}", web::get().to(detail))
             .route("/blog", web::get().to(blog))
             .route("/blog/content/{slug}", web::get().to(content))
+            .route("/chat", web::get().to(chat))
             // .service(detail)
             // .service(content)
             .service(
