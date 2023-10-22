@@ -181,10 +181,156 @@ impl Handler<Join> for ChatServer {
 const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
 // How long before lack of client response causes a timeout
 const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
+#[derive(Debug)]
 struct WsChatSession {
     pub id: usize,
     pub hb: Instant,
     pub room: String,
     pub name: Option<String>,
     pub addr: Addr<ChatServer>,
+}
+
+impl WsChatSession {
+    // helper function that sends ping to client every 5 seconds
+    fn hb(&self, ctx: &mut ws::WebsocketContext<Self>) {
+        ctx.run_interval(HEARTBEAT_INTERVAL, |act, ctx| {
+            if Instant::now().duration_since(act.hb) > CLIENT_TIMEOUT {
+                println!("Websocket client heartbeat failed, disconnecting!");
+                // notify chat server
+                act.addr.do_send(Disconnect { id: act.id });
+                ctx.stop();
+                return;
+            }
+            ctx.ping(b"");
+        });
+    }
+}
+
+impl Actor for WsChatSession {
+    type Context = ws::WebsocketContext<Self>;
+    // Method is called on actor start.
+    // We register ws session with ChatServer
+    fn started(&mut self, ctx: &mut Self::Context) {
+        self.hb(ctx);
+        // register self in chat server. `AsyncContext::wait` register
+        // future within context, but context waits until this future resolves
+        // before processing any other events.
+        // HttpContext::state() is instance of WsChatSessionState, state is share
+        // across all routes within application
+        let addr = ctx.address();
+        self.addr
+            .send(Connect {
+                addr: addr.recipient(),
+            })
+            .into_actor(self)
+            .then(|res, act, ctx| {
+                match res {
+                    Ok(res) => act.id = res,
+                    _ => ctx.stop(),
+                }
+                fut::ready(())
+            })
+            .wait(ctx);
+    }
+
+    fn stopping(&mut self, _: &mut Self::Context) -> Running {
+        self.addr.do_send(Disconnect { id: self.id });
+        Running::Stop
+    }
+}
+
+impl Handler<Message> for WsChatSession {
+    type Result = ();
+    fn handle(&mut self, msg: Message, ctx: &mut Self::Context) {
+        ctx.text(msg.0);
+    }
+}
+
+impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
+    fn handle(&mut self, msg: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
+        let msg = match msg {
+            Err(_) => {
+                ctx.stop();
+                return;
+            }
+            Ok(msg) => msg,
+        };
+        log::debug!("WEBSOCKET MESSAGE: {msg:?}");
+        match msg {
+            ws::Message::Ping(msg) => {
+                self.hb = Instant::now();
+                ctx.pong(&msg)
+            }
+            ws::Message::Pong(_) => {
+                self.hb = Instant::now();
+            }
+            ws::Message::Text(text) => {
+                let m = text.trim();
+                if m.starts_with('/') {
+                    let v: Vec<&str> = m.splitn(2, ' ').collect();
+                    match v[0] {
+                        "/list" => {
+                           println!("List rooms");
+                           self.addr
+                               .send(ListRooms)
+                               .into_actor(self)
+                               .then(|res, _, ctx| {
+                                   match res {
+                                       Ok(rooms) => {
+                                           for room in rooms {
+                                               ctx.text(room);
+                                           }
+                                       }
+                                       _ => println!("Something is wrong"),
+                                   }
+                                   fut::ready(())
+                               })
+                               .wait(ctx)
+                        }
+                        "/join" => {
+                            if v.len() == 2 {
+                                self.room = v[1].to_owned();
+                                self.addr.do_send(Join {
+                                    id: self.id,
+                                    name: self.room.clone(),
+                                });
+                                ctx.text("joined")
+                            } else {
+                                ctx.text("!!! room name is required");
+                            }
+                        }
+                        "/name" => {
+                            if v.len() == 2 {
+                                self.name = Some(v[1].to_owned());
+                            } else {
+                                ctx.text("!!! name is required");
+                            }
+                        }
+                        _ => ctx.text(format!("!!! unknown command: {m:?}")),
+                    }
+                } else {
+                    let msg = if let Some(ref name) = self.name {
+                        format!("{name}: {m}")
+                    } else {
+                        m.to_owned()
+                    };
+                    // send message to chat server
+                    self.addr.do_send(ClientMessage {
+                        id: self.id,
+                        msg,
+                        room: self.room.clone(),
+                    })
+                }
+            }
+            ws::Message::Binary(_) => println!("Unexpected binary"),
+            ws::Message::Close(reason) => {
+                ctx.close(reason);
+                ctx.stop();
+            }
+            ws::Message::Continuation(_) => {
+                ctx.stop();
+            }
+            ws::Message::Nop => (),
+        }
+    }
 }
