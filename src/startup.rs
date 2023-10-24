@@ -1,13 +1,24 @@
-use std::{collections::HashMap, net::TcpListener, sync::{Arc, atomic::AtomicUsize}};
+use std::{
+    collections::HashMap,
+    net::TcpListener,
+    sync::{atomic::AtomicUsize, Arc},
+};
 
-use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like, chat, get_count, chat_route, ChatServer}, models::contacts::Contacts};
+use crate::{
+    configuration::Config,
+    models::contacts::Contacts,
+    routes::{
+        blog, chat, chat_route, content, detail, get_count, health_check, index, like, ChatServer,
+    },
+};
 use actix::Actor;
 use actix_files::Files;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
+    cookie::Key,
     dev::Server,
     web::{self, Data},
-    App, HttpResponse, HttpServer, Responder, cookie::Key,
+    App, HttpResponse, HttpServer, Responder,
 };
 use anyhow::Result;
 use handlebars::Handlebars;
@@ -37,7 +48,6 @@ pub async fn contacts(
         }
     }
 }
-
 
 pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
@@ -71,10 +81,8 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
             .route("/blog", web::get().to(blog))
             .route("/blog/content/{slug}", web::get().to(content))
             .route("/chat", web::get().to(chat))
-            .route("/count", web::get().to(get_count))
             .route("/ws", web::get().to(chat_route))
-            // .service(detail)
-            // .service(content)
+            .route("/count", web::get().to(get_count))
             .service(
                 Files::new("/", "./static")
                     .prefer_utf8(true)

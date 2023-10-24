@@ -1,5 +1,8 @@
 use actix::prelude::*;
-use actix_web::{web::{self, Data}, Error, HttpRequest, HttpResponse, Responder};
+use actix_web::{
+    web::{self, Data},
+    Error, HttpRequest, HttpResponse,
+};
 use actix_web_actors::ws;
 use handlebars::Handlebars;
 use rand::{self, rngs::ThreadRng, Rng};
@@ -364,8 +367,16 @@ pub async fn chat_route(
 }
 
 /// Displays state
-pub async fn get_count(count: web::Data<AtomicUsize>) -> impl Responder {
+pub async fn get_count(count: web::Data<AtomicUsize>) -> HttpResponse {
     let current_count = count.load(Ordering::SeqCst);
-    format!("Visitors: {current_count}")
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(format!(
+            r#"<h2 
+           hx-get="/count" hx-swap="outerHTML">
+            {}
+        </h2>
+        "#,
+            current_count
+        ))
 }
-
