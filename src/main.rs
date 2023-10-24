@@ -2,7 +2,7 @@ use std::net::TcpListener;
 use demcru::startup::run;
 use demcru::configuration::get_config;
 use sqlx::PgPool;
-#[tokio::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let config = get_config().expect("Failed to read config");
     let connection_pool = PgPool::connect(&config.database.connection_string())

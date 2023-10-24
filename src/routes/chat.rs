@@ -1,7 +1,9 @@
 use actix::prelude::*;
-use actix_web::{web, Error, HttpRequest, HttpResponse};
+use actix_web::{web::{self, Data}, Error, HttpRequest, HttpResponse, Responder};
 use actix_web_actors::ws;
+use handlebars::Handlebars;
 use rand::{self, rngs::ThreadRng, Rng};
+use serde_json::json;
 use std::{
     collections::{HashMap, HashSet},
     sync::{
@@ -97,7 +99,7 @@ impl Actor for ChatServer {
 // Register new session and assign unique id to this session
 impl Handler<Connect> for ChatServer {
     type Result = usize;
-    fn handle(&mut self, msg: Connect, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: Connect, _: &mut Self::Context) -> Self::Result {
         println!("Someone joined");
         self.send_message("main", "Someone joined", 0);
 
@@ -270,22 +272,22 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
                     let v: Vec<&str> = m.splitn(2, ' ').collect();
                     match v[0] {
                         "/list" => {
-                           println!("List rooms");
-                           self.addr
-                               .send(ListRooms)
-                               .into_actor(self)
-                               .then(|res, _, ctx| {
-                                   match res {
-                                       Ok(rooms) => {
-                                           for room in rooms {
-                                               ctx.text(room);
-                                           }
-                                       }
-                                       _ => println!("Something is wrong"),
-                                   }
-                                   fut::ready(())
-                               })
-                               .wait(ctx)
+                            println!("List rooms");
+                            self.addr
+                                .send(ListRooms)
+                                .into_actor(self)
+                                .then(|res, _, ctx| {
+                                    match res {
+                                        Ok(rooms) => {
+                                            for room in rooms {
+                                                ctx.text(room);
+                                            }
+                                        }
+                                        _ => println!("Something is wrong"),
+                                    }
+                                    fut::ready(())
+                                })
+                                .wait(ctx)
                         }
                         "/join" => {
                             if v.len() == 2 {
@@ -334,3 +336,36 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WsChatSession {
         }
     }
 }
+
+// Routes
+pub async fn chat(hb: Data<Handlebars<'static>>) -> HttpResponse {
+    let content = hb.render("chat", &json!({})).unwrap();
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(content)
+}
+
+pub async fn chat_route(
+    req: HttpRequest,
+    stream: web::Payload,
+    srv: web::Data<Addr<ChatServer>>,
+) -> Result<HttpResponse, Error> {
+    ws::start(
+        WsChatSession {
+            id: 0,
+            hb: Instant::now(),
+            room: "main".to_owned(),
+            name: None,
+            addr: srv.get_ref().clone(),
+        },
+        &req,
+        stream,
+    )
+}
+
+/// Displays state
+pub async fn get_count(count: web::Data<AtomicUsize>) -> impl Responder {
+    let current_count = count.load(Ordering::SeqCst);
+    format!("Visitors: {current_count}")
+}
+

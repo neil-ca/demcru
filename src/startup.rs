@@ -1,6 +1,7 @@
-use std::{collections::HashMap, net::TcpListener};
+use std::{collections::HashMap, net::TcpListener, sync::{Arc, atomic::AtomicUsize}};
 
-use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like, chat}, models::contacts::Contacts};
+use crate::{configuration::Config, routes::{detail, blog, content, index, health_check, like, chat, get_count, chat_route, ChatServer}, models::contacts::Contacts};
+use actix::Actor;
 use actix_files::Files;
 use actix_session::{storage::CookieSessionStore, SessionMiddleware};
 use actix_web::{
@@ -47,6 +48,9 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
         .unwrap();
     let secret_key = Key::generate();
     let conn = Data::new(db_pool);
+    // ws
+    let app_state = Arc::new(AtomicUsize::new(0));
+    let chat_server = ChatServer::new(app_state.clone()).start();
     let server = HttpServer::new(move || {
         App::new()
             .wrap(
@@ -54,6 +58,8 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
                     .cookie_secure(false)
                     .build(),
             )
+            .app_data(web::Data::from(app_state.clone()))
+            .app_data(Data::new(chat_server.clone()))
             .app_data(conn.clone())
             .app_data(web::Data::new(config.clone()))
             .app_data(web::Data::new(handlebars.clone()))
@@ -65,6 +71,8 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
             .route("/blog", web::get().to(blog))
             .route("/blog/content/{slug}", web::get().to(content))
             .route("/chat", web::get().to(chat))
+            .route("/count", web::get().to(get_count))
+            .route("/ws", web::get().to(chat_route))
             // .service(detail)
             // .service(content)
             .service(
