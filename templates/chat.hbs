@@ -1,20 +1,21 @@
 {{>head}}
-<div class="bg-gray-800 p-4 rounded-lg shadow-lg m-6">
-<h1 class="text-3xl font-semibold text-center">Hi chat</h1>
-<button hx-get="/count" hx-swap="outerHTML">
-    Get Count Visitors
-</button>
-
-<div>
-  <button id="connect" class="rounded-lg bg-green-500 p-2">Connect</button>
-  <span>Status:</span>
-  <span id="status">disconnected</span>
+<div class="w-[90%] lg:w-[60%] mx-auto bg-gray-800 p-4 rounded-lg shadow-lg m-6">
+<h1 class="text-3xl font-semibold text-center text-orange-400">Hi chat</h1>
+<div class="flex m-2 items-center">
+  <button hx-get="/count" hx-target="#visitors"
+    class="rounded-lg bg-green-700 p-2 mr-3">
+    Visitors
+  </button>
+  <span id="visitors" class="mr-3"></span>
+  <button id="connect" class="rounded-lg bg-green-700 p-2 mr-3">Connect</button>
+  <span class="mr-3">Status:</span>
+  <span id="status" class="rounded-lg p-2 mr-3">Disconnected</span>
 </div>
 
-<div id="log" class="mt-4 rounded-lg p-4"></div>
+<div id="log" class="mt-4 rounded-lg p-4 min-h-[150px] bg-gray-700"></div>
 
 <form id="chatform" class="mt-4 flex items-center">
-  <input type="text" id="text" class="w-full p-2 bg-gray-600 rounded-lg"/>
+  <input type="text" id="text" placeholder="Enter a command or message" class="w-full p-2 bg-gray-600 rounded-lg"/>
   <input type="submit" id="send" value=">" class="p-2 bg-green-600 rounded ml-2 cursor-pointer"/>
 </form>
 
@@ -22,30 +23,30 @@
 
 <section>
   <h2>Commands</h2>
-  <table style="border-spacing: 0.5em">
+  <table class="w-full border-collapse">
     <tr>
-      <td>
+      <td class="p-2">
         <code>/list</code>
       </td>
-      <td>list all available rooms</td>
+      <td class="p-2">list all available rooms</td>
     </tr>
     <tr>
-      <td>
+      <td class="p-2">
         <code>/join name</code>
       </td>
-      <td>join room, if room does not exist, create new one</td>
+      <td class="p-2">join room, if room does not exist, create new one</td>
     </tr>
     <tr>
-      <td>
+      <td class="p-2">
         <code>/name name</code>
       </td>
-      <td>set session name</td>
+      <td class="p-2">set session name</td>
     </tr>
     <tr>
-      <td>
+      <td class="p-2">
         <code>some message</code>
       </td>
-      <td>just string, send message to all peers in same room</td>
+      <td class="p-2">just string, send message to all peers in same room</td>
     </tr>
   </table>
 </section>
@@ -61,7 +62,7 @@
       var socket = null
 
       function log(msg, type = 'status') {
-        $log.innerHTML += `<p class="msg msg--${type}">${msg}</p>`
+        $log.innerHTML += `<p class="bg-gray-700">${msg}</p>`
         $log.scrollTop += 1000
       }
 
@@ -104,14 +105,12 @@
 
       function updateConnectionStatus() {
         if (socket) {
-          $status.style.backgroundColor = 'transparent'
           $status.style.color = 'green'
           $status.textContent = `connected`
           $connectButton.innerHTML = 'Disconnect'
           $input.focus()
         } else {
-          $status.style.backgroundColor = 'red'
-          $status.style.color = 'white'
+          $status.style.color = 'orange'
           $status.textContent = 'disconnected'
           $connectButton.textContent = 'Connect'
         }

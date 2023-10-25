@@ -370,13 +370,8 @@ pub async fn chat_route(
 pub async fn get_count(count: web::Data<AtomicUsize>) -> HttpResponse {
     let current_count = count.load(Ordering::SeqCst);
     HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
         .body(format!(
-            r#"<h2 
-           hx-get="/count" hx-swap="outerHTML">
-            {}
-        </h2>
-        "#,
+            r#"{}"#,
             current_count
         ))
 }
