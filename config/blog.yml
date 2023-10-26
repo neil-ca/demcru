@@ -3,6 +3,13 @@ description: "A blog about stuff"
 default: rust-is-hard
 posts:
   - slug: rust-is-hard
+    title: "Workflow with k3s"
+    author: Neil Ulises
+    date: 2022-10-23
+    body: >
+      Is intimidating test thing in production and always ask how can do it 
+      easy with all the best practices and CI/CD 
+  - slug: rust-is-hard
     title: "Rust is hard"
     author: Github Copilot
     date: 2022-10-23
