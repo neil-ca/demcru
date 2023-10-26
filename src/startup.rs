@@ -1,12 +1,9 @@
 use std::{
-    collections::HashMap,
     net::TcpListener,
     sync::{atomic::AtomicUsize, Arc},
 };
-
 use crate::{
     configuration::Config,
-    models::contacts::Contacts,
     routes::{
         blog, chat, chat_route, content, detail, get_count, health_check, index, like, ChatServer,
     },
@@ -18,38 +15,13 @@ use actix_web::{
     cookie::Key,
     dev::Server,
     web::{self, Data},
-    App, HttpResponse, HttpServer, Responder,
+    App, HttpServer,
 };
 use anyhow::Result;
 use handlebars::Handlebars;
-use sqlx::PgPool;
+use sqlx::sqlite::SqlitePool;
 
-pub async fn contacts(
-    hb: web::Data<Handlebars<'static>>,
-    pool: web::Data<PgPool>,
-) -> impl Responder {
-    let body = sqlx::query_as!(Contacts, "SELECT * FROM contacts")
-        .fetch_all(pool.get_ref())
-        .await;
-    match body {
-        Ok(contacts) => {
-            // let data = json!({
-            //     "contacts": contacts
-            // });
-            // println!("{:?}", data);
-            let mut context = HashMap::new();
-            context.insert("contacts".to_string(), &contacts);
-            let html = hb.render("contact", &context).unwrap();
-            HttpResponse::Ok().body(html)
-        }
-        Err(e) => {
-            print!("Failed: {}", e);
-            HttpResponse::InternalServerError().body(format!("Error: {}", e))
-        }
-    }
-}
-
-pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Error> {
+pub fn run(listener: TcpListener, db_pool: SqlitePool) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
     let config = Config::new();
     let mut handlebars = Handlebars::new();
@@ -76,7 +48,6 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
             .route("/", web::get().to(index))
             .route("/health-check", web::get().to(health_check))
             .route("/like", web::post().to(like))
-            .route("/contacts", web::get().to(contacts))
             .route("/blog/{current}", web::get().to(detail))
             .route("/blog", web::get().to(blog))
             .route("/blog/content/{slug}", web::get().to(content))

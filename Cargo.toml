@@ -17,7 +17,7 @@ config = "0.13.3"
 dotenv = "0.15.0"
 reqwest = "0.11.18"
 serde = "1.0.175"
-sqlx = { version = "0.6", default-features = false, features = ["offline", "runtime-actix-rustls", "macros", "postgres", "uuid", "chrono", "migrate"] }
+sqlx = { version = "0.6", default-features = false, features = ["offline", "runtime-actix-rustls", "macros", "sqlite", "uuid", "chrono", "migrate"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 mini_markdown = "0.3"
 serde_yaml = "0.9"

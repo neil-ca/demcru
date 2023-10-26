@@ -6,7 +6,7 @@ use actix_web::{
 use handlebars::Handlebars;
 use serde_json::json;
 use sqlx::query;
-use sqlx::PgPool;
+use sqlx::sqlite::SqlitePool;
 use uuid::Uuid;
 
 use crate::utils::CustomError;
@@ -30,13 +30,13 @@ pub async fn index(hb: Data<Handlebars<'static>>, req: HttpRequest) -> HttpRespo
         .body(content)
 }
 
-pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpResponse, CustomError> {
+pub async fn like(req: HttpRequest, pool: web::Data<SqlitePool>) -> Result<HttpResponse, CustomError> {
     let user_uuid = match req.cookie("user_uuid") {
         Some(c) => {
             // Delete like from db
             let uuid_str = c.value();
             let id = Uuid::parse_str(uuid_str).map_err(|_| CustomError::ParsingError)?;
-            query!("DELETE FROM likes WHERE id = $1", id)
+            query!("DELETE FROM likes WHERE id = ?1", id)
                 .execute(pool.get_ref())
                 .await
                 .map_err(|e| CustomError::DatabaseError(e))?;
@@ -59,16 +59,16 @@ pub async fn like(req: HttpRequest, pool: web::Data<PgPool>) -> Result<HttpRespo
                 )
         }
         None => {
-            let count = query!("SELECT COUNT(id) FROM likes")
+            let count = query!("SELECT COUNT(*) as count FROM likes")
                 .fetch_one(pool.get_ref())
                 .await
                 .map_err(|e| CustomError::DatabaseError(e))?;
 
-            let current: i64 = count.count.unwrap_or(0);
+            let current: i32 = count.count;
             let new = current + 1;
             let new_uuid = Uuid::new_v4();
             let _ = query!(
-                "INSERT INTO likes (id, counter) VALUES ($1, $2)",
+                "INSERT INTO likes (id, counter) VALUES (?1, ?2)",
                 new_uuid,
                 new
             )

@@ -9,6 +9,10 @@ posts:
     body: >
       Is intimidating test thing in production and always ask how can do it 
       easy with all the best practices and CI/CD 
+
+      ```sh
+        k config set-cluster my-k3s-cluster --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
+      ```
   - slug: rust-is-hard
     title: "Rust is hard"
     author: Github Copilot
