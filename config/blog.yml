@@ -12,6 +12,7 @@ posts:
       In this guide we're going to use sqlite, k3s and htmx to ship software
       fast and reliable 
 
+      lets
       ```sh
         k config set-cluster my-k3s-cluster --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
       ```
