@@ -1,0 +1,38 @@
+# https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: site
+  labels: 
+    app: site
+spec:
+  selector:
+    matchLabels:
+      app: site
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: site
+    spec:
+      # initContainers:
+      # Init containers are exactly like regular containers, except:
+      # - Init containers always run to completion.
+      # - Each init container must complete successfully before the next one starts.
+      containers:
+        - name: site
+          image: ulicode/demcru:latest
+          resources:
+            requests:
+              cpu: 160m
+              memory: 160Mi
+            limits:
+              cpu: 160m
+              memory: 160Mi
+          ports:
+            - containerPort: 8080
