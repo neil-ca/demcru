@@ -1,3 +1,4 @@
 /target
 static/styles/output.css
 *.db*
+.env

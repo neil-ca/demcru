@@ -2,7 +2,7 @@ title: "Actix Blog"
 description: "A blog about stuff"
 default: rust-is-hard
 posts:
-  - slug: rust-is-hard
+  - slug: stack-k3s
     title: "Workflow with k3s"
     author: Neil Ulises
     date: 2022-10-23
@@ -11,8 +11,6 @@ posts:
       easy with all the best practices and CI/CD.
       In this guide we're going to use sqlite, k3s and htmx to ship software
       fast and reliable 
-
-      lets
       ```sh
         k config set-cluster my-k3s-cluster --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
       ```
@@ -50,7 +48,7 @@ posts:
       reading the book again, but it's just so dry. I've tried watching videos
       again, but they're all
       ![tree](/images/logo.png)
-      
+
       ```rust
         use std::net::TcpListener;
         use demcru::startup::run;
@@ -165,4 +163,3 @@ posts:
       ## Thank you for your time.
 
       You are welcome.
-
