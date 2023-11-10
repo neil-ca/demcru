@@ -1,13 +1,13 @@
 {{> head}}
-<div class="p-5 mb-7 w-fit m-auto border-indigo-200 shadow-md shadow-lime-200">
-    <h1>Articles and guides</h1>
+<div class="p-5 mb-12 w-fit m-auto shadow-md shadow-lime-200">
+    <h1 class="text-center font-extrabold">Articles and guides</h1>
     <ul>
     {{#each posts}}
       <li class="text-orange-400 italic"><a href="/blog/{{this.slug}}" 
         hx-get="/blog/content/{{this.slug}}" 
         hx-target="#content" 
         hx-replace-url="/blog/{{slug}}">
-        .{{this.title}} ({{this.date}})</a>
+        {{this.title}} ({{this.date}})</a>
       </li>
     {{/each}}
     </ul>

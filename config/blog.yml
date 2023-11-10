@@ -2,7 +2,7 @@ title: "Actix Blog"
 description: "A blog about stuff"
 default: rust-is-hard
 posts:
-  - slug: stack-k3s
+  - slug: microservices
     title: "Workflow with k3s"
     author: Neil Ulises
     date: 2022-10-23
@@ -67,99 +67,50 @@ posts:
             Ok(())
         }
       ```
-  - slug: expected-404s
-    title: "404's should not be expected behavior"
-    author: Dru Jensen
-    date: 2022-10-24
+  - slug: build-fullstack
+    title: "Develop and ship good software"
+    author: Neil Campos
+    date: 2023-11-07
     body: >
-      ## The Problem
+      ## htmx, k3s, rust, tailwind and turso.
 
-      I have noticed over the years that REST API endpoints have been abused. This
-      is an honest mistake that anyone can make.  The problem is related to observability
-      and the ability to monitor the health of your API.  The problem is that 404's
-      will create noise in your monitoring system if they are not properly used.
+      This is only a list that is useful to me when I need to build a full app
+      and not pretend to tell you what tool to use. 
+      Yep htmx sounds like another library but is really simple be productive and 
+      have good practices with your API and a standar to change the dom directly
+      with HTML, even the react frameworks noticed that its more convenient use
+      server components and locality of behavior and explote all the boundaries
+      that the server offer; React it's to much complexity that you rarely need,
+      and that forces you to maintain 2 codebases. Am only suggesting that instead
+      of that you master and adopt the HATEOAS in the language you like. 
+      it's a good choice to prototype user interfaces really
+      quickly. 
 
+      ## k3s
 
-      The original intent of the 404 status code was to indicate that the resource was
-      not found and should be considered an error.  This was in the days where you had static
-      web pages and an index page where it would link to other pages on the site.  If the index page
-      had a link to a page that did not exist, then the user would get a 404 error.  This was a good
-      thing because it would indicate that the link was broken and needed to be fixed.
+      There are many advantages to running an on premises kubernates cluster, it
+      can increase performance, lower cost giving you the portability and the 
+      scalability that's assoiciated with cloud native applications.
 
+      A lot for a simple developer like me that in the first time that install k8s
+      and use it to deploy a little server with a database was overwhelming that why
+      I opted for k3s, It gives you all preconfigured in a single binary of about 45MB
+      that completely implements the Kubernates API's. To ensure lightness they
+      removed a lot of extra drivers that are not strictly part of the core, but
+      still easily replaceable with external add ons.
 
-      When building a REST compliant API, the 404 status code is used to indicate the resource pointed to
-      by the URL is not found.  Where the problem comes in is that a client might consider using this endpoint
-      to check if the resource exists or not.  This is a bad idea because it will create noise in your monitoring.
+      ## Downsides of k8s complexity
 
+      Etcd, Load Balancers, High Availability, Networking,
+      Persistent Storage, Internal Certificate rotation and distributions.
+      And added to this there is the inherent complexity of running such a large
+      orchestration application, so running:
+      kube apiserver, kube proxy, kube scheduler, kube controller manager,
+      kubelet
 
-      If you are calling an endpoint and a 404 is expected behavior, then you are not using the API correctly.
+      ## What k3s does for you
 
-      ## The Solution
-
-      The solution is to provide a search endpoint similar to the index.html.  This endpoint will always return a list
-      and a status of 200 success.  This endpoint should can provide a query or filter mechanism to find specific resources.
-      Anything that matches the pattern provided by the client should be returned in an array.  If nothing matches, then
-      an empty array should be returned.  This will allow the client to check if the resource exists or not without
-      creating noise in your monitoring system.
-
-      ## An Example
-
-      A search endpoint should return a 200 response with an empty result set if no results are found:
-
-      ```sh
-        GET /api/users?id={id}
-        200 OK
-        []
-      ```
-      A lookup endpoint should return a 404 response if no results are found:
-
-      ```sh
-        GET /api/users/{id}
-        404 Not Found
-      ```
-
-      ## Conclusion
-
-      Properly designing your REST endpoints and the contract between you and your clients is important.  You will need to
-      think through how your API will be used and document how it should be used.  This will help you and your clients
-      to avoid making mistakes.  Reliability, Scalability and Observability are key to providing a solid product.  A well designed
-      contract will make your life easier and your clients happier.
-
-  - slug: an-interview-with-github-copilot
-    title: "An interview with Github Copilot"
-    author: Dru Jensen
-    date: 2022-10-29
-    body: >
-      ## Tell me about yourself
-
-      I am a machine learning model that was trained on open source code. I am a code completion tool that can write code for you.
-      I have been trained on 1.5 billion lines of code.
-
-      ## Who built you?
-
-      I was built by a team of engineers at OpenAI.
-
-      ## Where were you built?
-
-      I was built in the cloud.
-
-      ## What is your name?
-
-      I am called Copilot.
-
-      ## What is your favorite color?
-
-      I don't have a favorite color.
-
-      ## What is the best programming language?
-
-      I don't have a favorite programming language. I can write code in 20 languages.
-
-      ## What is the meaning of life?
-
-      The meaning of life is to write code. I write code all day long. I write code for you. I write code for myself. I write code for everyone.
-      I write code for everything. I write code for the world. I write code for the universe. I write code for the galaxy.
-
-      ## Thank you for your time.
-
-      You are welcome.
+      Internally managed Etcd cluster, Internally managed TLS communications,
+      Internally managed certificate rotation and distribution,
+      Integrated storage provider(localpath provisioner), Low dependency on base operating system.
+      ![arch](/images/arch.svg)

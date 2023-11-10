@@ -1,10 +1,18 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: gateway-ingress
+  name: site-ingress
+  annotations:
+    kubernates.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsenrypt-prod
 spec:
+  tls:
+    - secretName: site-tls
+      hosts:
+        - ulicode.space
   rules:
-  - http:
+  - host: ulicode.space
+    http:
       paths:
       - path: /
         pathType: Prefix
