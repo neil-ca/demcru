@@ -7,7 +7,7 @@ metadata:
     cert-manager.io/cluster-issuer: letsenrypt-prod
 spec:
   tls:
-    - secretName: site-tls
+    - secretName: ulicode-space-tls
       hosts:
         - ulicode.space
   rules:
