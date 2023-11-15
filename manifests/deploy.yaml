@@ -27,12 +27,5 @@ spec:
       containers:
         - name: site
           image: ulicode/demcru:latest
-          resources:
-            requests:
-              cpu: 160m
-              memory: 160Mi
-            limits:
-              cpu: 160m
-              memory: 160Mi
           ports:
             - containerPort: 8080
