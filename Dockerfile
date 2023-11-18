@@ -1,5 +1,6 @@
 FROM rust:latest as chef
 
+ENV DATABASE_URL="sqlite:data.db"
 
 WORKDIR /app
 # RUN apt update && apt install lld clang -y

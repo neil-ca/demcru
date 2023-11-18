@@ -5,6 +5,7 @@ module.exports = {
     extend: {},
     fontFamily: {
       space: ['"Nova Mono"', "monospace"],
+      bree: ['"Bree Serif"', "serif"]
     },
   },
   plugins: [],
