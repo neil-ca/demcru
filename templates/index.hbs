@@ -1,19 +1,18 @@
 {{> head}}
 <main class="h-fit text-center p-8">
-<div class="w-[90%] md:w-[60%] mx-auto shadow-xl shadow-red-400 border-red-50 rounded-md mb-12">
-  <img src="/images/me.jpg" class="rounded-full w-20 h-20 m-auto mb-3">
-  <h2 class="font-bold text-orange-200 text-2xl py-2 md:text-xl">
+<div class="w-3/4 mx-auto rounded-md mb-12">
+  <img src="/images/me.jpg" class="mask mask-squircle w-20 h-20 m-auto mb-3">
+  <h2 class="font-bold text-orange-200 py-2 text-2xl">
     Neil Campos
   </h2>
-  <h3 class="text-xl">Fullstack developer, especialized in <span class="text-teal-500">backend services</span>.
+  <h3 class="text-xl p-8">Fullstack developer, especialized in <span class="text-teal-500">backend services</span>.
     Join me down and let's get cracking!.</h3>
 
-  <div class="flex flex-row justify-center items-center bg-red-400 rounded-md mt-3">
+  <div class="h-10 flex flex-row justify-center items-end bg-red-400 rounded-md mt-6">
     <a href="https://github.com/neil-ca" target="_blank"><img src="/images/git.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     <img _="on click js navigator.clipboard.writeText('ulicode4@gmail.com')
     end then put 'Copied!' into #message wait 2s put '' into #message" 
         src="/images/mail.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"/>
-    <a href="https://www.linkedin.com/in/neil-campos" target="_blank"><img src="/images/linkedin.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     {{#if cookie}}
         <img src="/images/heart.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"
             hx-post="/like" hx-swap="outerHTML"
@@ -32,7 +31,7 @@
     <section>
         <div>
             <h3 class="text-3xl text-orange-200 py-1">Services I offer</h3>
-            <p class="text-md leading-8 md:text-xl max-w-xl mx-auto font-bree">
+            <p class="p-6 text-md leading-8 md:text-xl max-w-xl mx-auto font-bree">
               Since the beginning of my journey as a software developer, I've 
               done a lot of web's or improve their sites and enjoy fix problems 
               and help to build their businesses. I've been
@@ -43,8 +42,9 @@
             </p>
           </div>
           <div class="flex flex-col justify-between items-center lg:flex-row gap-7">
-            <div class="text-center max-w-xs shadow-sm shadow-lime-200 p-8 rounded-xl my-10">
-              <img src="/images/web4.png" class="w-full">
+
+            <div class="card w-96 bg-base-100 shadow-xl">
+              <img src="/images/web4.png" class="image-full">
               <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
                 Realtime apps
               </h3>
@@ -60,7 +60,7 @@
               <a href="/chat" class="text-orange-400">Example</a>
             </div>
 
-            <div class="text-center max-w-xs shadow-sm shadow-lime-200 p-10 rounded-xl my-10">
+            <div class="card w-96 bg-base-100 shadow-xl">
               <img src="/images/web3.png">
               <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
                 I build API's reliable and scalable
@@ -75,7 +75,7 @@
               <p class="py-1">Docker/Kubernates</p>
             </div>
 
-            <div class="text-center max-w-xs shadow-sm shadow-lime-200 p-10 rounded-xl my-10">
+            <div class="card w-96 bg-base-100 shadow-xl">
               <img src="/images/web2.png">
               <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
                 Manage databases, Queues and Streams
@@ -89,7 +89,7 @@
               <p>Kafka</p>
             </div>
 
-            <div class="text-center max-w-xs shadow-sm shadow-lime-200 p-10 rounded-xl my-10">
+            <div class="card w-96 bg-base-100 shadow-xl">
               <img src="/images/web1.png">
               <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
                 Beatiful designs

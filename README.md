@@ -5,5 +5,5 @@ chmod +x ./scripts/init-db.sh && ./scripts/init-db.sh
 cargo watch -x run
 ```
 # Todo
-Complete the blogs 
-    explain why is best chose hateoas over Json 
+[] Complete the blogs 
+[] complete the content

@@ -2,3 +2,5 @@
 static/styles/output.css
 *.db*
 .env
+node_modules/
+bun.lockb

@@ -5,8 +5,11 @@ module.exports = {
     extend: {},
     fontFamily: {
       space: ['"Nova Mono"', "monospace"],
-      bree: ['"Bree Serif"', "serif"]
+      bree: ['"Bree Serif"', "serif"],
     },
   },
-  plugins: [],
+  daisyui: {
+    themes: ["forest"],
+  },
+  plugins: [require("daisyui")],
 };
