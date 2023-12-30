@@ -1,6 +1,6 @@
 {{> head}}
 <main class="h-fit text-center p-8">
-<div class="w-3/4 mx-auto rounded-md mb-12">
+<div class="lg:w-1/2 mx-auto mb-12 shadow-2xl">
   <img src="/images/me.jpg" class="mask mask-squircle w-20 h-20 m-auto mb-3">
   <h2 class="font-bold text-orange-200 py-2 text-2xl">
     Neil Campos
@@ -8,8 +8,9 @@
   <h3 class="text-xl p-8">Fullstack developer, especialized in <span class="text-teal-500">backend services</span>.
     Join me down and let's get cracking!.</h3>
 
-  <div class="h-10 flex flex-row justify-center items-end bg-red-400 rounded-md mt-6">
-    <a href="https://github.com/neil-ca" target="_blank"><img src="/images/git.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
+  <div class="h-10 flex justify-center bg-indigo-400 rounded-lg mt-6">
+    <a href="https://github.com/neil-ca" target="_blank" class="tooltip" data-tip="Github">
+    <img src="/images/git.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2"></a>
     <img _="on click js navigator.clipboard.writeText('ulicode4@gmail.com')
     end then put 'Copied!' into #message wait 2s put '' into #message" 
         src="/images/mail.svg" class="w-6 h-6 hover:w-7 hover:h-7 m-2 cursor-pointer"/>
@@ -28,81 +29,97 @@
     <span id="message"></span>
     <span id="message2"></span>
 </div>
-    <section>
-        <div>
-            <h3 class="text-3xl text-orange-200 py-1">Services I offer</h3>
-            <p class="p-6 text-md leading-8 md:text-xl max-w-xl mx-auto font-bree">
-              Since the beginning of my journey as a software developer, I've 
-              done a lot of web's or improve their sites and enjoy fix problems 
-              and help to build their businesses. I've been
-              working in the <span class="text-teal-500">health sector</span>
-              and with little owners of <span class="text-teal-500">marketplace</span>
-              and collaborated with talented people to create apps for both
-              business and consumer use.
-            </p>
+  <section>
+    <div>
+        <h3 class="text-3xl text-orange-200 py-1">Services I offer</h3>
+        <p class="p-6 text-md leading-8 md:text-xl max-w-xl mx-auto font-bree">
+          Since the beginning of my journey as a software developer, I've 
+          done a lot of web's or improve their sites and enjoy fix problems 
+          and help to build their businesses. I've been
+          working in the <span class="text-teal-500">health sector</span>
+          and with little owners of <span class="text-teal-500">marketplace</span>
+          and collaborated with talented people to create apps for both
+          business and consumer use.
+        </p>
+      </div>
+      <div class="flex flex-col justify-between items-center lg:flex-row gap-7">
+
+        <div class="card w-96 bg-base-100 shadow-2xl">
+          <img src="/images/web4.png" class="image-full">
+          <div class="card-body">
+          <h2 class="card-title">
+          Realtime apps
+          </h2>
+          <p>
+            I enjoy build realtime apps that helps to see bussinness changes,
+            like chats, systems notifications and changes in the data and represent
+            that in dashboards.
+          </p>
+          <div class="card-actions justify-end">
+            <p class="badge badge-secondary">WebSockets</p>
+            <p class="badge badge-secondary">Redis</p>
+            <p class="badge badge-secondary">Databases</p>
           </div>
-          <div class="flex flex-col justify-between items-center lg:flex-row gap-7">
-
-            <div class="card w-96 bg-base-100 shadow-xl">
-              <img src="/images/web4.png" class="image-full">
-              <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
-                Realtime apps
-              </h3>
-              <p class="py-2">
-                I enjoy build realtime apps that helps to see bussinness changes,
-                like chats, systems notifications and changes in the data and represent
-                that in dashboards.
-              </p>
-              <h4 class="py-4 text-teal-600">Tools I use</h4>
-              <p>WebSockets</p>
-              <p>Kafka, Rabbitmq, Redis</p>
-              <p>Databases</p>
-              <a href="/chat" class="text-orange-400">Example</a>
-            </div>
-
-            <div class="card w-96 bg-base-100 shadow-xl">
-              <img src="/images/web3.png">
-              <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
-                I build API's reliable and scalable
-              </h3>
-              <p class="py-2">
-                Creating reliable and scalable api's for your needs, and deploy it 
-                in the cloud with kubernaets
-              </p>
-              <h4 class="py-4 text-teal-600">Tools I use</h4>
-              <p class="py-1">Databases</p>
-              <p class="py-1">API's and monitoring</p>
-              <p class="py-1">Docker/Kubernates</p>
-            </div>
-
-            <div class="card w-96 bg-base-100 shadow-xl">
-              <img src="/images/web2.png">
-              <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
-                Manage databases, Queues and Streams
-              </h3>
-              <p class="py-2">
-                Create pipelines and driven event development
-              </p>
-              <h4 class="py-4 text-teal-600">Design tools I use</h4>
-              <p>Postgres, sqlite</p>
-              <p>Linux</p>
-              <p>Kafka</p>
-            </div>
-
-            <div class="card w-96 bg-base-100 shadow-xl">
-              <img src="/images/web1.png">
-              <h3 class="text-lg font-medium text-orange-300 pt-8 pb-2">
-                Beatiful designs
-              </h3>
-              <p class="py-2">
-                Creating elegant designs suited for your next design theory.
-              </p>
-              <h4 class="py-4 text-teal-600">Design tools I use</h4>
-              <p>Tailwind</p>
-              <p>HTMX or React</p>
-              <p>Databases</p>
-            </div>
+          <a href="/chat" class="btn btn-outline">Example</a>
           </div>
+        </div>
+
+        <div class="card w-96 bg-base shadow-2xl">
+          <img src="/images/web3.png">
+          <div class="card-body">
+          <h2 class="card-title">
+            I build API's reliable and scalable
+          </h2>
+          <p>
+            Creating reliable and scalable api's for your needs, and deploy it 
+            in the cloud with kubernaets
+          </p>
+          <div class="card-actions justify-end">
+          <p class="badge badge-secondary">Databases</p>
+          <p class="badge badge-secondary">API's and monitoring</p>
+          <p class="badge badge-secondary">Docker/Kubernates</p>
           </div>
-        </section>
+           <a href="/chat" class="btn btn-outline">Example</a>
+          </div>
+        </div>
+
+        <div class="card w-96 bg-base shadow-2xl">
+          <img src="/images/web2.png">
+          <div class="card-body">
+          <h2 class="card-title">
+            Manage databases, Queues and Streams
+          </h2>
+          <p>
+            Create pipelines and driven event development
+          </p>
+          <div class="card-actions justify-end">
+          <p class="badge badge-secondary">Databases</p>
+          <p class="badge badge-secondary">Linux</p>
+          <p class="badge badge-secondary">Kafka</p>
+          </div>
+           <a href="/chat" class="btn btn-outline">Example</a>
+          </div>
+        </div>
+
+        <div class="card w-96 bg-base shadow-2xl">
+          <img src="/images/web1.png">
+          <div class="card-body">
+          <h2 class="card-title">
+            Beatiful designs
+          </h2>
+          <p>
+            Creating elegant designs suited for your next design theory.
+          </p>
+          <div class="card-actions justify-end">
+          <p class="badge badge-secondary">Tailwind</p>
+          <p class="badge badge-secondary">HTMX or React</p>
+          <p class="badge badge-secondary">Databases</p>
+          </div>
+           <a href="/chat" class="btn btn-outline">Example</a>
+          </div>
+        </div>
+
+      </div>
+      </div>
+    </section>
 </main>

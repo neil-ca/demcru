@@ -1,7 +1,7 @@
 {{> head}}
-<div class="p-5 mb-12 w-fit m-auto shadow-md shadow-lime-200">
-    <h1 class="text-center font-extrabold">Articles and guides</h1>
-    <ul>
+<div class="text-lg p-5 mb-12 w-fit m-auto">
+    <h1 class="font-extrabold mb-4">Articles and guides</h1>
+    <ul class="list-disc">
     {{#each posts}}
       <li class="text-orange-400 italic"><a href="/blog/{{this.slug}}" 
         hx-get="/blog/content/{{this.slug}}" 
