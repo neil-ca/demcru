@@ -1,18 +1,18 @@
 {{>head}}
 <div class="w-[90%] lg:w-[60%] mx-auto bg-gray-800 p-4 rounded-lg shadow-lg m-6">
-<h1 class="text-3xl font-semibold text-center text-orange-400">Hi chat</h1>
+<h1 class="text-3xl font-semibold text-center text-orange-400">Hi chat!</h1>
 <div class="flex m-2 items-center">
   <button hx-get="/count" hx-target="#visitors"
-    class="rounded-lg bg-green-700 p-2 mr-3">
+    class="btn btn-primary ml-3">
     Visitors
   </button>
-  <span id="visitors" class="mr-3"></span>
-  <button id="connect" class="rounded-lg bg-green-700 p-2 mr-3">Connect</button>
+  <span id="visitors" class="m-3"></span>
+  <button id="connect" class="btn btn-primary p-2 mr-3">Connect</button>
   <span class="mr-3">Status:</span>
   <span id="status" class="rounded-lg p-2 mr-3">Disconnected</span>
 </div>
 
-<div id="log" class="mt-4 rounded-lg p-4 min-h-[150px] bg-gray-700"></div>
+<div id="log"></div>
 
 <form id="chatform" class="mt-4 flex items-center">
   <input type="text" id="text" placeholder="Enter a command or message" class="w-full p-2 bg-gray-600 rounded-lg"/>
@@ -62,7 +62,12 @@
       var socket = null
 
       function log(msg, type = 'status') {
-        $log.innerHTML += `<p class="bg-gray-700">${msg}</p>`
+        const isStart = type === 'message-start'
+        const isEnd = type === 'message-end'
+        const startClass = isStart ? 'chat-start' : ''
+        const endClass = isEnd ? 'chat-end' : ''
+        const bubble = isStart ? 'chat-bubble-primary' : 'chat-bubble-secondary'
+        $log.innerHTML += `<div class="chat ${startClass} ${endClass}"><div class="chat-bubble ${bubble} mt-2">${msg}</div></div>`
         $log.scrollTop += 1000
       }
 
@@ -74,20 +79,17 @@
         const proto = location.protocol.startsWith('https') ? 'wss' : 'ws'
         const wsUri = `${proto}://${location.host}/ws`
 
-        log('Connecting...')
         socket = new WebSocket(wsUri)
 
         socket.onopen = () => {
-          log('Connected')
           updateConnectionStatus()
         }
 
         socket.onmessage = (ev) => {
-          log('Received: ' + ev.data, 'message')
+          log('Received: ' + ev.data, 'message-start')
         }
 
         socket.onclose = () => {
-          log('Disconnected')
           socket = null
           updateConnectionStatus()
         }
@@ -95,7 +97,6 @@
 
       function disconnect() {
         if (socket) {
-          log('Disconnecting...')
           socket.close()
           socket = null
 
@@ -108,11 +109,13 @@
           $status.style.color = 'green'
           $status.textContent = `connected`
           $connectButton.innerHTML = 'Disconnect'
+          $connectButton.className = 'btn btn-accent p-2 mr-3'
           $input.focus()
         } else {
           $status.style.color = 'orange'
           $status.textContent = 'disconnected'
           $connectButton.textContent = 'Connect'
+          $connectButton.className = 'btn btn-primary p-2 mr-3'
         }
       }
 
@@ -128,10 +131,9 @@
 
       $form.addEventListener('submit', (ev) => {
         ev.preventDefault()
-
         const text = $input.value
 
-        log('Sending: ' + text)
+        log('Sending: ' + text,  'message-end')
         socket.send(text)
 
         $input.value = ''
