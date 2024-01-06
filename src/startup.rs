@@ -1,7 +1,3 @@
-use std::{
-    net::TcpListener,
-    sync::{atomic::AtomicUsize, Arc},
-};
 use crate::{
     configuration::Config,
     routes::{
@@ -18,15 +14,19 @@ use actix_web::{
     App, HttpServer,
 };
 use anyhow::Result;
-use handlebars::Handlebars;
+use handlebars::{DirectorySourceOptions, Handlebars};
 use sqlx::sqlite::SqlitePool;
+use std::{
+    net::TcpListener,
+    sync::{atomic::AtomicUsize, Arc},
+};
 
 pub fn run(listener: TcpListener, db_pool: SqlitePool) -> Result<Server, std::io::Error> {
     // Wrap the connections in a smart poiner
     let config = Config::new();
     let mut handlebars = Handlebars::new();
     handlebars
-        .register_templates_directory(".hbs", "./templates")
+        .register_templates_directory("templates/", DirectorySourceOptions::default())
         .unwrap();
     let secret_key = Key::generate();
     let conn = Data::new(db_pool);
@@ -40,7 +40,7 @@ pub fn run(listener: TcpListener, db_pool: SqlitePool) -> Result<Server, std::io
                     .cookie_secure(false)
                     .build(),
             )
-            .app_data(web::Data::from(app_state.clone()))
+            .app_data(Data::from(app_state.clone()))
             .app_data(Data::new(chat_server.clone()))
             .app_data(conn.clone())
             .app_data(web::Data::new(config.clone()))
