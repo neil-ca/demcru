@@ -21,16 +21,27 @@ pub async fn index(hb: Data<Handlebars<'static>>, req: HttpRequest) -> HttpRespo
         None => false,
     };
     let content = if user_uuid {
-        hb.render("index", &json!({"cookie": true})).unwrap()
+        hb.render(
+            "index",
+            &json!({"cookie": true, "description": "Personal portfolio and blog."}),
+        )
+        .unwrap()
     } else {
-        hb.render("index", &json!({"cookie": false})).unwrap()
+        hb.render(
+            "index",
+            &json!({"cookie": false, "description": "Personal portfolio and blog."}),
+        )
+        .unwrap()
     };
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(content)
 }
 
-pub async fn like(req: HttpRequest, pool: web::Data<SqlitePool>) -> Result<HttpResponse, CustomError> {
+pub async fn like(
+    req: HttpRequest,
+    pool: web::Data<SqlitePool>,
+) -> Result<HttpResponse, CustomError> {
     let user_uuid = match req.cookie("user_uuid") {
         Some(c) => {
             // Delete like from db
