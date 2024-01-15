@@ -14,7 +14,8 @@ RUN cargo build --release
 FROM debian:stable-slim AS runtime
 # RUN apt update && apt install glibc-source -y
 WORKDIR /app
-RUN apt update && apt-get install sqlite3 -y
+RUN apt update
+# RUN apt update && apt-get install sqlite3 -y
 # Install OpenSSL - it is dynamically linked by some of our dependencies
 # Install ca-certificates -it is needed to verify TLS certificates
 # when establishing HTTPS connecion

@@ -4,6 +4,7 @@ use demcru::configuration::get_config;
 // use libsql_client::Client;
 use sqlx::sqlite::SqlitePool;
 use std::env;
+
 #[actix_web::main]
 async fn main() -> anyhow::Result<()> {
     let config = get_config().expect("Failed to read config");
