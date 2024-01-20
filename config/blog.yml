@@ -71,20 +71,9 @@ posts:
       the best option by default, when if you are not creating a heavy client
       experience like a spreadsheet. Otherwise you don't need overcomplicate with:
       Maintain 2 codebases, Decoding and encoding and maintain 2 states,
-      Just return html and make real [RESTful](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/)
+      Just return html and make real [RESTful](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/).
 
       ![why-htmx](/images/why-htmx.png)
-
-      skill issue
-      Yep htmx sounds like another library but is really simple be productive and 
-      have good practices with your API and a standar to change the dom directly
-      with HTML, even the react frameworks noticed that its more convenient use
-      server components and locality of behavior and explote all the boundaries
-      that the server offer; React it's to much complexity that you rarely need,
-      and that forces you to maintain 2 codebases. Am only suggesting that instead
-      of that you master and adopt the HATEOAS in the language you like. 
-      it's a good choice to prototype user interfaces really
-      quickly. 
 
       ## k3s
 
@@ -97,20 +86,14 @@ posts:
       I opted for k3s, It gives you all preconfigured in a single binary of about 45MB
       that completely implements the Kubernates API's. To ensure lightness they
       removed a lot of extra drivers that are not strictly part of the core, but
-      still easily replaceable with external add ons.
-
-      ## Downsides of k8s complexity
-
-      Etcd, Load Balancers, High Availability, Networking,
-      Persistent Storage, Internal Certificate rotation and distributions.
-      And added to this there is the inherent complexity of running such a large
-      orchestration application, so running:
-      kube apiserver, kube proxy, kube scheduler, kube controller manager,
-      kubelet
+      still easily replaceable with external add ons **bold text**.
 
       ## What k3s does for you
 
-      Internally managed Etcd cluster, Internally managed TLS communications,
-      Internally managed certificate rotation and distribution,
-      Integrated storage provider(localpath provisioner), Low dependency on base operating system.
+      Hi this is an example
+        * Internally managed Etcd cluster
+        * Internally managed TLS communications
+        * Internally managed certificate rotation and distribution
+        * Integrated storage provider(localpath provisioner)
+        * Low dependency on base operating system
       ![arch](/images/arch.svg)

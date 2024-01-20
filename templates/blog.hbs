@@ -3,7 +3,7 @@
     <h1 class="font-extrabold mb-4">Articles and guides</h1>
     <ul class="list-disc">
     {{#each posts}}
-      <li class="text-orange-400 italic"><a href="/blog/{{this.slug}}" 
+      <li class="link link-secondary"><a href="/blog/{{this.slug}}"
         hx-get="/blog/content/{{this.slug}}" 
         hx-target="#content" 
         hx-replace-url="/blog/{{slug}}">
