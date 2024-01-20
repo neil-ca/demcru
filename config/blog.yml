@@ -2,18 +2,6 @@ title: "Actix Blog"
 description: "A blog about stuff"
 default: change-data-capture
 posts:
-  - slug: how-create-good-apis
-    title: "Create robust apis with rust"
-    author: Neil Ulises
-    date: 2022-10-23
-    body: >
-      Is intimidating test thing in production and always ask how can do it 
-      easy with all the best practices and CI/CD.
-      In this guide we're going to use sqlite, k3s and htmx to ship software
-      fast and reliable, a
-      ```sh
-        k config set-cluster my-k3s-cluster --server=https://127.0.0.1:6443 --insecure-skip-tls-verify
-      ```
   - slug: change-data-capture
     title: "Create alerts and notifications with your data and events"
     author: Neil Ulises
@@ -68,14 +56,26 @@ posts:
         }
       ```
   - slug: my-web-stack
-    title: "Develop full apps with this stack"
+    title: "Great combo in web development"
     author: Neil Campos
     date: 2023-11-07
     body: >
-      ## htmx, k3s, rust, tailwind and turso.
+      The stack([Turso](https://turso.tech/), [Htmx](https://htmx.org/), [K3s](https://k3s.io/)),
+      You pick the backend language that you want.
 
-      This is only a list that is useful to me when I need to build a full app
-      and not pretend to tell you what tool to use. 
+      ## HTMX
+
+      This post only pretend that you ask yourself if the stack that are you using
+      is the appropriate one in terms of fast delivery and reliable, and with this said
+      my principal issue with modern's frontends(React, Vue...) is that seems that is
+      the best option by default, when if you are not creating a heavy client
+      experience like a spreadsheet. Otherwise you don't need overcomplicate with:
+      Maintain 2 codebases, Decoding and encoding and maintain 2 states,
+      Just return html and make real [RESTful](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/)
+
+      ![why-htmx](/images/why-htmx.png)
+
+      skill issue
       Yep htmx sounds like another library but is really simple be productive and 
       have good practices with your API and a standar to change the dom directly
       with HTML, even the react frameworks noticed that its more convenient use

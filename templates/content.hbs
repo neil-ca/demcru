@@ -1,6 +1,6 @@
 <div
   id="{{slug}}"
-  class="text-lg w-[90%] lg:w-[60%] mx-auto p-5 [&>p]:p-4 [&>h2]:py-2 [&>h2]:text-orange-400"
+  class="text-lg w-[90%] lg:w-[60%] mx-auto p-5 [&>p]:p-4 [&>h2]:py-2 [&>h2]:text-orange-400 [&_a]:link [&_a]:link-accent"
 >
   <h1 class="text-center text-lime-400 text-2xl font-extrabold">{{title}}</h1>
   <p>
@@ -12,5 +12,14 @@
     {{author}}</h6>
 </div>
 
-<!--<script>hljs.highlightAll();</script>-->
-<script>hljs.initHighlightingOnLoad();</script>
+<script>hljs.highlightAll();</script>
+<!--<script>hljs.initHighlightingOnLoad();</script>-->
+<script>
+    let paragraphsWithLinks = document.querySelectorAll('p a');
+
+    // Convert NodeList to array using spread operator and loop through each paragraph containing links
+    [...paragraphsWithLinks].forEach(function(link) {
+        // Add the target="_blank" attribute to each link
+        link.setAttribute('target', '_blank');
+    });
+</script>
