@@ -1,6 +1,6 @@
 title: "Actix Blog"
 description: "A blog about stuff"
-default: change-data-capture
+default: light-web-stack
 posts:
   - slug: change-data-capture
     title: "Create alerts and notifications with your data and events"
@@ -55,45 +55,113 @@ posts:
             Ok(())
         }
       ```
-  - slug: my-web-stack
+  - slug: light-web-stack
     title: "Great combo in web development"
     author: Neil Campos
     date: 2023-11-07
     body: >
       The stack([Turso](https://turso.tech/), [Htmx](https://htmx.org/), [K3s](https://k3s.io/)),
-      You pick the backend language that you want.
+      You pick the backend language that you want :).
 
       ## HTMX
 
-      This post only pretend that you ask yourself if the stack that are you using
-      is the appropriate one in terms of fast delivery and reliable, and with this said
+      This post only pretend that you ask yourself if the stack that you are using
+      is the appropriate in terms of fast delivery and prototyping, and with this said
       my principal issue with modern's frontends(React, Vue...) is that seems that is
-      the best option by default, when if you are not creating a heavy client
-      experience like a spreadsheet. Otherwise you don't need overcomplicate with:
-      Maintain 2 codebases, Decoding and encoding and maintain 2 states,
-      Just return html and make real [RESTful](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/).
+      the best option by default, when if you are not creating a heavy client's
+      like a spreadsheet or when you really need to have a site offline, maybe is 
+      complexity that it's not necessary.
+      Years before react towards sense with the SPA and make changes without refresh
+      the page, but with libs like htmx tackle this and gives really power to html
+      that allow you to focus in your business logic and still having a good client
+      experience, the main advantages are:
+       * Take away a lot of space in the docker image with 14k of the lib
+       * No maintain 2 codebases
+       * No decoding and encoding JSON
+       * No replicate 2 states
+       * Just return html and make real [RESTful](https://htmx.org/essays/how-did-rest-come-to-mean-the-opposite-of-rest/) with SPA benefits
 
       ![why-htmx](/images/why-htmx.png)
 
-      ## k3s
+      ## Js is good but not in everything
 
-      There are many advantages to running an on premises kubernates cluster, it
-      can increase performance, lower cost giving you the portability and the 
-      scalability that's assoiciated with cloud native applications.
+      This seems a skill issue or a hate to the javascript ecosystem but even
+      they are considering more server components with the only incovenient that
+      you are tied to build the backend in the environment that they offer like
+      with Vercel. All the Js ecosystem it's not going anywhere but there is
+      another solutions that makes things more simple when you have to build an
+      entire solution that require a solid data model and backend to success!.
 
-      A lot for a simple developer like me that in the first time that install k8s
-      and use it to deploy a little server with a database was overwhelming that why
-      I opted for k3s, It gives you all preconfigured in a single binary of about 45MB
-      that completely implements the Kubernates API's. To ensure lightness they
-      removed a lot of extra drivers that are not strictly part of the core, but
-      still easily replaceable with external add ons **bold text**.
+      ## Turso
+
+      Is a [fork](https://turso.tech/libsql) of sqlite in the edge
+      that comparing with others solutions have the best free plan to build your
+      product. Am not a big fan to start for example with a NoSQL solution to start
+      something quick, I prefer invest time in create a good schema for the business
+      needs and use SQL in the begin with no need to maintain a super database like postgres.
+      The [multitenancy](https://turso.tech/multitenancy) is a good reason to build
+      a saas on it, to show how simple it is, this 2 commands:
+
+      ```sh
+        # Replicate a DB for a client to Tokio
+        turso db replicate db_name nrt
+        # Get the data for a client
+        turso db shell org-zjhg3lp .dump > org.data
+      ```
+
+      ## Embedded replicas
+
+      Provide a smooth switch between local and remote database operations, allowing
+      the same database replicate in local for reads and the writes for remote, 
+      and sync when you really need it.
+
+      ## Platform API
+
+      A RESTful api that allows you to change databases, replicas, and users without
+      managing database infrastructure and replication. A simple example:
+
+      ```js
+        public databases: DatabaseAPI = {
+          create: ({ name, location, image, group }) =>
+            this.fetch("/v1/databases", {
+            method: "POST",
+            body: JSON.stringify({
+              name,
+              location,
+              group,
+            }),
+          }),
+        };
+      ```
+
+      ## K3s
+
+      K3s complement really well in our light stack that doesn't mean that can't
+      scale, turso and k3s are focus to embedded systems but you can create large
+      clusters with high-availability setup and an external database for etcd, and
+      for turso replicas and multitenancy technique.
+      To manipulate your infrastructure am not 100% sure that kubernates is really
+      the more simple to work with, Also with solutions like [fly.io](https://fly.io/)
+      or [shuttle](https://www.shuttle.rs/) are good options to not interact directly
+      with all the complexity of the infrastructure. But I will argue that know how to
+      manipulate containers, It will give you advantages in the future.
+      I really encourage to create your own lab with minimum hardware and have fun testing your
+      services.
 
       ## What k3s does for you
 
-      Hi this is an example
-        * Internally managed Etcd cluster
-        * Internally managed TLS communications
-        * Internally managed certificate rotation and distribution
-        * Integrated storage provider(localpath provisioner)
-        * Low dependency on base operating system
+      For a simple developer like me that in the first time that install k8s
+      and use it to deploy a little server with a database was overwhelming that's why
+      I opted for k3s, It gives you all preconfigured in a single binary of about 45MB
+      that completely implements the Kubernates API's. To ensure lightness they
+      removed a lot of extra drivers that are not strictly part of the core, but
+      still easily replaceable with external add ons.
+       * increase performance
+       * lower cost giving you the portability and the scalability that's assoiciated with cloud native applications
+       * Internally managed Etcd cluster
+       * Internally managed TLS communications
+       * Internally managed certificate rotation and distribution
+       * Integrated storage provider(localpath provisioner)
+       * Low dependency on base operating system
+
       ![arch](/images/arch.svg)

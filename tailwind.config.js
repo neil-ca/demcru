@@ -4,7 +4,7 @@ module.exports = {
   theme: {
     extend: {},
     fontFamily: {
-      space: ['"Nova Mono"', "monospace"],
+      space: ['"Space Mono"', "monospace"],
       bree: ['"Bree Serif"', "serif"],
     },
   },
