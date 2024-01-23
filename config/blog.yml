@@ -2,59 +2,148 @@ title: "Actix Blog"
 description: "A blog about stuff"
 default: light-web-stack
 posts:
-  - slug: change-data-capture
-    title: "Create alerts and notifications with your data and events"
+  - slug: threads-rust
+    title: "Threads in Rust"
     author: Neil Ulises
     date: 2022-10-23
     body: >
-      [link](https://github.com)
-      I've been trying to learn Rust for a while now, but I just can't get it.
-      I've tried reading the book, but it's just so dry. I've tried watching
-      videos, but they're all so long. I've tried reading blog posts, but they
-      all seem to be written by people who already know Rust. I've tried
-      reading the source code, but it's just so hard to understand. I've tried
-      reading the RFCs, but they're all so long. I've tried reading the
-      documentation, but it's just so hard to understand. I've tried reading
-      the book again, but it's just so dry. I've tried watching videos again,
-      but they're all so long. I've tried reading blog posts again, but they
-      all seem to be written by people who already know Rust. I've tried
-      reading the source code again, but it's just so hard to understand. I've
-      tried reading the RFCs again, but they're all so long. I've tried reading
-      the documentation again, but it's just so hard to understand. I've tried
-      reading the book again, but it's just so dry. I've tried watching videos
-      again, but they're all so long. I've tried reading blog posts again, but
-      they all seem to be written by people who already know Rust. I've tried
-      reading the source code again, but it's just so hard to understand. I've
-      tried reading the RFCs again, but they're all so long. I've tried reading
-      the documentation again, but it's just so hard to understand. I've tried
-      reading the book again, but it's just so dry. I've tried watching videos
-      again, but they're all so long. I've tried reading blog posts again, but
-      they all seem to be written by people who already know Rust. I've tried
-      reading the source code again, but it's just so hard to understand. I've
-      tried reading the RFCs again, but they're all so long. I've tried reading
-      the documentation again, but it's just so hard to understand. I've tried
-      reading the book again, but it's just so dry. I've tried watching videos
-      again, but they're all
-      ![tree](/images/logo.png)
-
+      Every program starts with the main thread only. This thread will execute your
+      main function and can be used to spawn more threads if necessary.
       ```rust
-        use std::net::TcpListener;
-        use demcru::startup::run;
-        use demcru::configuration::get_config;
-        use sqlx::PgPool;
-
-        #[tokio::main]
-        async fn main() -> std::io::Result<()> {
-            let config = get_config().expect("Failed to read config");
-            let connection_pool = PgPool::connect(&config.database.connection_string())
-                .await
-                .expect("Failed to connect to postgres.");
-            let address = format!("127.0.0.1:{}", config.application_port);
-            let listener = TcpListener::bind(address)?;
-            run(listener, connection_pool)?.await?;
-            Ok(())
+        use std::thread;
+        fn main() {
+          thread::spawn(f);
+          thread::spawn(f);
+          println!("main thread");
+        }
+        fn f() {
+          println!("another thread");
+          let id = thread::current().id();
+          println!("Thread id: {id:?}");
         }
       ```
+      If we execute this code there is no guarantee that the main thread wait the
+      execution of the others threads, you have to invoke the method **join()**.
+
+      ```rust
+        let t1 = thread::spawn(f);
+
+        // Waits until the thread has finished executing and returns a std::thread::Result
+
+        t1.join().unwrap();
+      ```
+      No longer a truncate output. But we still have a diferent order in which the messages
+      are printed. The output locking in the println macro **std::io::Stdout::lock()** make
+      sure its output doesn't get interrumped.
+      Since a thread might run until the very end of the program's execution, the spawn
+      function has a 'static lifetime bound on its argument type. In other words, it only
+      accepts functions that may be kept around forever, since that reference would
+      become invalid the moment the local variable ceases to exist.
+      ```rust
+        // Getting a value back out of the thread is done by returning it from
+        // the clousure. This return value can be obtained from the Result returned
+        // by the join method.
+        let numbers = Vec::from_iter(0..=1000);
+
+        let t = thread::spawn(move || {
+          let len = numbers.len();
+          let sum = numbers.into_iter().sum::<usize>();
+          // value returned by the thread's clousure
+          sum / len
+        });
+
+        let average = t.join().unwrap();
+        println!("average: {average}");
+      ```
+
+      ## Thread Builder
+
+      The spawn function is actually just a convenient shorthand for 
+      **std::thread::Builder::new().spawn().unwrap()**. Builder allows you to
+      set some settings for the new thread and to give the new thread before spawning it.
+      You can use it to configure the **stack size or name**, this helps to debug,
+      monitor and to recover more easily if panics a thread.
+
+      ## Scoped Threads
+
+      If we know for sure that a spawned thread will definitely not outlive a certain
+      scope, that thread could safely borrow things that do not live forever, such as
+      local variables, as long as they outlive that scope.
+      ```rust
+        let numbers = vec![1,2,3];
+
+        thread::scope(|s| {
+          // When the scope ends, all threads that haven't been joined yet are automatically joined.
+          s.spawn(|| {
+            println!("length: {}", numbers.len());
+          });
+          s.spawn(|| {
+            for n in &numbers {
+              println!("{n}");
+            }
+          })
+        })
+      ```
+      Both threads are concurrently accessing numbers. But will drop error if we
+      change in one of them or in the main thread. Something to highlight is a big
+      error design in the **Rust 1.0** with a function named scoped, it allowed
+      non static captures because returned a JoinGuard instead of a JoinHandle,
+      which joined the thread when dropped. Any borrowed data only needed to outlive
+      this JoinGuard. Without guarantee that something will be dropped.
+      [The Leakpocalypse](https://cglab.ca/~abeinges/blah/everyone-poops/) improve
+      the design for safety interface like **std::mem::forget** was upgraded to a
+      safe function, to emphatize that forgetting (or leaking) is always a possibility.
+      Or **scoped** was redisign that doesn't rely on **Drop** for correctness.
+
+      ## Shared Ownership and Reference Counting
+
+      When sharing data between two threads where neither thread is guaranteed to outlive
+      the other, neither of them can be the owner of that data. Any data shared
+      between them will need to live as long as the longest living thread.
+      To make sure that shared data gets dropped and deallocated, we can't completely
+      give up its ownership. Instead, we can share ownership. By keeping track
+      of the number of owners, we can make sure the value is dropped only when
+      there are no owners left.
+      Rc is very similar to a **Box**, except cloning it will not allocate anything
+      new, but instead increment a counter stored next to the contained value.
+      Both the original and cloned Rc will refer to the same allocation; they share
+      ownership.
+      ```rust
+        use std::rc::Rc;
+        let a = Rc::new([1, 2, 3]);
+        let b = a.clone();
+        assert_eq!(a.as_ptr(), b.as_ptr()); // Same allocation!
+
+        // Rc is not thread safe, instead we can use Arc that guarantees that
+        // modifications to the reference counter are indivisible atomic operations,
+        // making it safe to use it with multiple threads.
+        use std::sync::Arc;
+        let a = Arc::new([1,2,3]);
+        // Cloning the Arc increments the reference count to two and provides us
+        // with a second Arc to the same allocation.
+        let b = a.clone();
+        thread::spawn(move || dbg!(a));
+        // Decrement the Arc to 0 and deallocate the array
+        thread::spawn(move || dbg!(b));
+      ```
+      ![naming_clones](/images/arc.png)
+
+      ## Borrowing and Data Races
+
+      In rust, values can be borrowed in two ways:
+      ## Immutable borrowing
+
+      Borrowing something with & gives an immutable reference. Such a reference
+      can be copied. Access to the data it references is shared between all copies
+      of such a reference. But you can't mutate something through such a reference.
+      That might affect other code that's currently borrowing the same data.
+      ## Mutable borrowing
+
+      Borrowing something with &mut gives a mutable reference. A mutable borrow
+      guarantees it's the only active borrow of that data. This ensures that mutating
+      the data will not change anything that other code is currently looking at.
+      These two concepts together fully prevent **data races**.
+
   - slug: light-web-stack
     title: "Great combo in web development"
     author: Neil Campos
