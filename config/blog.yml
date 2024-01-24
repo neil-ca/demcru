@@ -3,10 +3,13 @@ description: "A blog about stuff"
 default: light-web-stack
 posts:
   - slug: threads-rust
-    title: "Threads in Rust"
+    title: "Low level concurrency"
     author: Neil Ulises
     date: 2022-10-23
     body: >
+      Rust has a lot of rules and a strict compiler that can be tedious in the
+      begin but is necessary a design like that for build reliable and fast software.
+      ![summary](/images/summary.png)
       Every program starts with the main thread only. This thread will execute your
       main function and can be used to spawn more threads if necessary.
       ```rust
@@ -143,7 +146,280 @@ posts:
       guarantees it's the only active borrow of that data. This ensures that mutating
       the data will not change anything that other code is currently looking at.
       These two concepts together fully prevent **data races**.
+      ## Interior Mutability
 
+      The borrowing rules are limitating between threads communication since no data
+      that's accessible by multiple threads can be mutated. A data type with interior
+      mutability slightly bends the borrowing rules. As soon as interior mutabile
+      type are involved, calling a reference "immutable" or "mutable" becomes confusing
+      and inaccurate, since some things can be mutated through both. The more accurate
+      terms are **shared** and **exclusive**: a shared reference (&T) can be copied
+      and shared with others, while an exclusive reference (&mut T) guarantees it's
+      the only exclusive borrowing of that T. For most types, shared references
+      do not allow mutation, but there are exceptions.
+      Let's take a look at a few types with interior mutability and how they can allow
+      mutation through shared references without causing undefined behavior.
+      ## Cell
+
+      Allows mutations through a shared reference. To avoid undefined behavior,it only
+      allows you to copy the value out (if T is Copy), or replace it with another
+      value as a whole. In addition, it can only be used within a single thread.
+      ```rust
+        use std::cell::Cell;
+        fn f(a: &Cell<i32>, b: &Cell<i32>) {
+          let before = a.get();
+          b.set(b.get() + 1);
+          let after = a.get();
+          if before != after {
+            x(); // might happen
+          }
+        }
+      ```
+      It is now possible for the if condition to be true. Because a Cell<i32> has interior
+      mutability, the compiler can no longer assume its value won't change as long as
+      we have a shared reference to it. Both a and b might refer to the same value,
+      such that mutating through b might affect a as well. It may still assume,
+      however, that no other threads are accessing the cells concurrently.
+      The restrictions on a Cell are not always easy to work with. Since it can't
+      directly let us borrow the value it holds, we need to move a value out (leaving
+      something in its place), modify it, then put it back, to mutate its contents:
+      ```rust
+        fn f(v: &Cell<Vec<i32>>) {
+          // Replaces the contents of the Cell with an empty Vec
+          let mut v2 = v.take();
+          v2.push(1);
+          // Put the modified Vec back
+          v.set(v2);
+        }
+      ```
+      ## RefCell
+
+      Unlike a regular Cell, RefCell allows you to borrow its contents, at a small
+      runtime cost. A RefCell does not only hold a T, but also holds a counter
+      that keeps track of any outstanding borrows. If you try to borrow it while
+      it is already mutably borrowed or vice versa, it will panic, which avoids
+
+      undefined behavior. Just like a Cell, a RefCell can only be used wthin a single thread.
+      Borrowing the contents of RefCell is done by calling borrow or borrowmut.
+      ```rust
+        use std::cell::RefCell;
+
+        fn f(v: &RefCell<Vec<i32>>) {
+          // We can modify the Vec directly
+          v.borrow_mut().push(1);
+        }
+      ```
+      While Cell and RefCell can be very useful, they become rather useless when we need
+      to do something with multiple threads. So let's move on to the types that are
+      relevant for concurrency.
+
+      ## Mutex and RwLock
+
+      An RwLock or reader writer lock is the concurrent version of a RefCell. An
+      RwLock holds a T and tracks any outstanding borrows. However, unlike a RefCell,
+      it does not panic on conflicting borrows. Instead, it blocks the current thread
+      putting it to sleep while waiting for conflicting borrows to disappear. We'll
+      just have to patiently wait for our turn with the data, after the other threads
+      are done with it.
+      Borrowing the contents of an RwLock is called locking. By locking it we
+      temporarily block concurrent conflicting borrows, allowing us to borrow it
+      without causing data races.
+
+
+      A mutex is very similar, but conceptually slightly simpler. Instead of keeping
+      track of the number of shared and exclusive borrows like an RwLock, it only
+      allows exclusive borrows.
+
+      ## Atomics
+
+      The atomics types represent the concurrent version of a Cell, only that they
+      cannot be of arbitrary size. Because of this, there is no generic Atomic<T> type,
+      but there are only specific atomic types such as AtomicU32 and AtomicPtr<T>.
+      Atomics often don't directly contain the information that needs to be shared
+      between threads. Instead, they are often used as a tool to make it possible
+      to share other often bigger things between threads. When atomics are used
+      to say something about other data, things can get surprisingly complicated.
+
+      ## UnsafeCell
+
+      An UnsafeCell is the primitive building block for interior mutability.
+      Does not come with any conditions or restrictions to avoid undefined behavior.
+      Instead, its get() method just gives a raw pointer to the value it wraps, which
+      cam only be meaningfully used in unsafe blocks. It leaves it up to the user
+      to use it in a way that does not cause any undefined behavior.
+
+      Most commonly, an UnsafeCell is not used directly, but wrapped in another
+      type that provides safety through a limited interface, such as Cell or Mutex.
+      All types with interior mutability including all types discussed above are
+      built on top of UnsafeCell.
+
+      ## Thread Safety: Send and Sync
+
+      The lenguage uses two special traits to keep track of which types can be
+      safely used across threads:
+      ## Send
+
+      A type is Send if it can be sent to another thread. In other words, if ownership
+      of a value of that type can be transferred to another thread. For example,
+      Arc<i32> is Send, but Rc<i32> is not.
+      ## Sync
+
+      A type is Sync if it can be shared with another thread. A type T is Sync if
+      and only if a shared reference to that type, &T, is Send. For example, an i32
+      is Sync, but a Cell<i32> is not. (A cell<i32> is Send, however.)
+
+
+      All primitive types such as i32, bool, and str are both Send and Sync.
+      Both of these traits are auto traits, which means that they are automatically
+      implemented for your types based on their fields. A struct with fields that
+      are all Send and Sync, is itself also Send and Sync.
+      ## Locking: Mutexes and RwLocks
+
+      The most commonly used tool for sharing (mutable) data between threads is a mutex,
+      which is short for "mutual exlusion". The job of a mutex is to ensure threads
+      have exclusive access to some data by temporarily blocking other threads that
+      try to access it at the same time.
+
+
+      Conceptually, a mutex has only two states: locked and unlocked. When a thread
+      locks an unlocked mutex, the mutex is marked as locked and the thread can immediately
+      continue. When a thread then attempts to lock an already locked mutex, that
+      operation will block. The thread is put to seep while it waits for the mutex
+      to be unlocked.
+
+
+      To ensure a locked mutex can only be unlocked by the thread that locked it,
+      it does not have an unlock() method. Instead, its **lock()** method returns
+      a special type called a **MutexGuard**. This guard represents the guarantee
+      that we have locked the mutex. It behaves like an exclusive reference through
+      the **DerefMut** trait, giving us exclusive access to the data the mutex
+      protects. Unlocking the mutex is done by dropping the guard, we give up our
+      ability to access the data, and the Drop implementation of the guard will
+      unlock the mutex.
+      ```rust
+        use std::sync::Mutex;
+        fn main() {
+          let n = Mutex::new(0);
+          thread::scope(|s| {
+            for _ in 0..10 {
+              s.spawn(|| {
+                let mut guard = n.lock().unwrap();
+                fot _ in 0..100 {
+                  *guard +=1;
+                }
+              });
+            }
+          });
+          assert_eq!(n.into_iter().unwrap(), 1000);
+        }
+      ```
+
+      ## Lock Poisoning
+      The unwrap() calls in the examples above relate to lock poisoning.
+      A Mutex in rust gets marked as poisoned when a thread panics while holding
+      the lock. When that happens, the mutex will no longer be locked, but calling
+      its lock method will result in an Err to indicate it has been poisoned.
+      While lock poisoning might seem like a powerful mechanism, recovering from
+      a potentially inconsistent state is not often done in practice. Most code either
+      **disregards poison** or uses unwrap() to panic if the lock was poisoned,
+      effectively propagating panics to all users of the mutex.
+      ## Reader-Writer Lock
+
+      A mutex is only concerned with exclusive access. The MutexGuard will provide
+      us an exclusive reference (&mut T) to the protected data, even if we only wanted
+      to lock at the data and a shared reference (&T) would have sufficed.
+
+
+      A reader writer lock is a slightly more complicated version of a mutex that
+      understands the difference between exclusive and shared access, and can provide
+      either. It has three states: **unlocked, locked by a single writer
+      (for exclusive access), and locked by any number of readers (for shared access).**
+      It is commonly used for data that is often read by multiple threads, but
+      only updated once in a while.
+      ## Waiting: Parking and Condition Variables
+
+      When data is mutated by multiple threads, there are many situations where
+      they would need to wait for some event, for some condition about the data to
+      become true.
+      While a mutex does allow threads to wait until it becomes unlocked, it does
+      not provide functionality for waiting for any other conditions. If a mutex was
+      all we had, we had have to keep locking the mutex to repeatedly check if
+      there's anything in the Vec yet.
+      ## Thread Parking
+
+      Wait for a notification from another thread is called. A thread can park itself,
+      which puts it to sleep, stopping it from consuming any CPU cycles. Another
+      thread can then unpark the parked thread, waking it up from its nap.
+      Thread parking is available through the std::thread::park() function.
+      Lets dive into an example that uses a mutex to share a queue between two
+      threads. In the following example, a newly spawned thread will consume
+      items from the queue, while the main thread will insert a new item into the
+      queue every second. Thread parking is used to make the consuming thread
+      wait when the queue is empty.
+      ```rust
+        use std::collections::VecDeque;
+        fn main() {
+          let queue = Mutex::new(VecDeque::new());
+          thread::scope(|s| {
+            // Consuming thread
+            let t = s.spawn(|| loop {
+              let item = queue.lock().unwrap().pop_front();
+              if let Some(item) = item {
+                dbg!(item);
+              } else {
+                thread::park();
+              }
+            });
+            // Producing thread
+            for i in 0.. {
+              queue.lock().unwrap().push_back(i);
+              t.thread().unpark();
+              thread::sleep(Duration::from_secs(1));
+            }
+          });
+        }
+      ```
+      The consuming thread runs an infinite loop in which it pops items out of the
+      queue to display them using the dbg macro. When the queue is empty, it stops
+      and goes to sleep using the park() function. If it gets unparked, the park()
+      call returns, and the loop continues, popping items from the queue again
+      until it is empty. And so on.
+      ## Condition Variables
+
+      Condition variables are a more commonly used option for waiting for something
+      to happen to data protected by a mutex. They have two basic operations:
+      **wait** and **notify**. Threads can wait on a condition variable, after
+      which they can be woken up when another thread notifies that same condition
+      variable. Multiple threads can wait on the same condition variable, and
+      notifications can either be sent to one waiting thread, or to all of them.
+      ```rust
+        use std::sync::Condvar;
+        let queue = Mutex::new(VecDeque::new());
+        let not_empty = Condvar::new();
+
+        thread::scope(|s| {
+          s.spawn(|| {
+            loop {
+              let mut q = queue.lock().unwrap();
+              let item = loop {
+                if let Some(item) = q.pop_front() {
+                  break item;
+                } else {
+                  q = not_empty.wait(q).unwrap();
+                }
+              };
+              drop(q);
+              dbg!(item);
+            }
+          });
+
+          for i in 0.. {
+            queue.lock().unwrap().push_back(i);
+            not_empty.notify_one();
+            thread::sleep(Duration::from_secs(1));
+          }
+        });
+      ```
   - slug: light-web-stack
     title: "Great combo in web development"
     author: Neil Campos
