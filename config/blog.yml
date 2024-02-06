@@ -503,7 +503,7 @@ posts:
 
       K3s complement really well in our light stack that doesn't mean that can't
       scale, turso and k3s are focus to embedded systems but you can create large
-      clusters with high-availability setup and an external database for etcd, and
+      clusters with high availability setup and an external database for etcd, and
       for turso replicas and multitenancy technique.
       To manipulate your infrastructure am not 100% sure that kubernates is really
       the more simple to work with, Also with solutions like [fly.io](https://fly.io/)
