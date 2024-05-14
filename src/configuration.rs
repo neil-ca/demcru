@@ -1,16 +1,16 @@
 use std::fs::File;
 
 use mini_markdown::render;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
-// Blog 
+// Blog
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Post {
     pub slug: String,
     pub title: String,
     pub author: String,
     pub date: String,
-    pub body: String, 
+    pub body: String,
 }
 
 impl Post {
@@ -24,7 +24,7 @@ pub struct Config {
     pub title: String,
     pub description: String,
     pub default: String,
-    pub posts: Vec<Post>
+    pub posts: Vec<Post>,
 }
 
 impl Config {
@@ -39,7 +39,7 @@ impl Config {
 #[derive(serde::Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
-    pub application_port: u16
+    pub application_port: u16,
 }
 
 #[derive(serde::Deserialize)]
@@ -53,7 +53,8 @@ pub struct DatabaseSettings {
 
 impl DatabaseSettings {
     pub fn connection_string(&self) -> String {
-        format!("postgres://{}:{}@{}:{}/{}",
+        format!(
+            "postgres://{}:{}@{}:{}/{}",
             self.username, self.password, self.host, self.port, self.database_name
         )
     }
@@ -64,8 +65,8 @@ pub fn get_config() -> Result<Settings, config::ConfigError> {
 
     let settings = config::Config::builder()
         .add_source(config::File::new(
-                "configuration.yaml", 
-                config::FileFormat::Yaml
+            "configuration.yaml",
+            config::FileFormat::Yaml,
         ))
         .build()?;
     settings.try_deserialize::<Settings>()
